@@ -52,6 +52,8 @@ int dk[tasks] = ...;
 // constant velocity of all the robots
 int velocity = ...;
 
+// time taken to traverse each egde
+float timetaken[nodes][nodes];
 
 // attributes of a decision variable
 tuple all_dvars{
@@ -64,11 +66,7 @@ setof(all_dvars) dvars = {<i,j,r> | i,j in nodes, r in robots};
 
 
 // rechability
-tuple reach{
-int i;
-int j;
-}
-setof(reach) g = {<i,j> | i,j in nodes};
+float g[nodes][nodes];
 
 // pre-processing
 
@@ -97,22 +95,42 @@ for(var i in tasks){
 fk[i] = 1/(ak[i].end - ak[i].start);
 }
 
+// time taken to traverse each egde
+for(var e in edges){
+timetaken[e.i][e.j] = edist[e]/velocity;
+}
+
 // adjacency matrix
 for(var e in edges){
-g[<e.i,e.j>] = edist[e]/velocity; 
+	g[e.i][e.j] = timetaken[e.i][e.j];
+
+	if(e.j ==0){
+		g[e.i][e.j] = 0;}	//can't go back to start
+	
+	if ((e.i > 1) & (e.j > 1)){
+		if((ak[e.i].start + timetaken[e.i][e.j]) > (ak[e.j].end - dk[e.j])){
+			g[e.i][e.j] = 0;}
+		
+		if((ak[e.i].end + timetaken[e.i][e.j]) < ak[e.j].start){
+			g[e.i][e.j] = 0;} 
+	}
+  }
 }
-}
+
+
+
 
 
 // Other constants
 int Q2 = min(i in tasks) dk[i];
 int Q3 = max(i in tasks) (ak[i].end - ak[i].start);
-// int H = min(i in nodes, j in nodes) g[<i,j>];
+float H = 10.0;
 
 // decision variables
 
 dvar boolean xind[dvars];
-dvar int xtime[dvars];
+dvar float xtime[dvars];
+//dvar float arrival[dvars];
 
 dexpr float TotalTime = sum(j in tasks) fk[j] * (sum(r in robots, i in nodes) xtime[<i,j,r>]) ;
 
@@ -136,12 +154,12 @@ forall(j in tasks)
  
 forall(r in robots, i in nodes)
   Correct1:
-  sum(j in nodes)
+  sum(j in nodes: j!=i)
     xind[<i,j,r>] <= 1;
      
 forall(r in robots, j in nodes)
   Correct2:
-  sum(i in nodes)
+  sum(i in nodes: j!=i)
     xind[<i,j,r>] <= 1;
      
 forall(r in robots, i in nodes, j in nodes)
@@ -152,9 +170,18 @@ forall(r in robots, i in nodes, j in tasks)
   Activation:
   xtime[<i,j,r>] >= dk[j];
   
-forall(r in robots, i in nodes, j in tasks)
+forall(r in robots, i in nodes, j in nodes)
   Motion:
-  H*xind[<i,j,r>] <= g[<i,j>];
+  H*xind[<i,j,r>] <= g[i][j];
+  
+/*forall(r in robots, i in nodes, j in tasks)
+	Define:
+	xtime[<i,j,r>] == ak[j].end - arrival[<i,j,r>];
+
+forall(r in robots, i in tasks, j in nodes)
+  Arrive:
+  arrival[<i,j,r>] == dk[i] + timetaken[i][j];
+*/
 }
 
 
