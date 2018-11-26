@@ -3,35 +3,44 @@
  * Author: dharini
  * Creation Date: Nov 3, 2018 at 1:56:55 PM
  *********************************************/
-// initialization
 
+/*************************************************************
+*********************** initialization ***********************
+*************************************************************/
 
 // Number of robots
 int R = ...;
 range robots = 1..R;
 
-
 // Number of tasks
 int tau = ...;
 range tasks = 1..tau;
 range nodes = 0..tau;	//start + targets
-// task locations
-tuple location{
-float x;
-float y;
-}
 
+
+/*********************** Graph attributes ***********************/
 // Graph edges connecting start positions and all targets
 tuple edge{
 int i;
 int j;
 }
+setof(edge) edges = {<i,j> | i,j in nodes : i != j};
 
-setof(edge) edges = {<i,j> | i,j in nodes : i !=j};
-
+// distance between nodes
 float edist[edges];
-location Location[nodes];
 
+
+// rechability
+float g[nodes][nodes];
+
+
+/*********************** Task attributes ***********************/
+// task locations
+tuple location{
+float x;
+float y;
+}
+location Location[nodes];
 
 // Activation duration of tasks
 tuple activation{
@@ -44,11 +53,13 @@ activation ak[tasks] = ...;
 float fk[tasks];
 
 // Quota = no. of robots required per task
-int qk[tasks] = ...;
+int qk[nodes] = ...;
 
 // Time required to finish the task
-int dk[tasks] = ...;
+int dk[nodes] = ...;
 
+
+/*********************** Motion attributes ***********************/
 // constant velocity of all the robots
 int velocity = ...;
 
@@ -61,14 +72,13 @@ int i;
 int j;
 int r;
 }
+setof(all_dvars) dvars = {<i,j,r> | i,j in nodes, r in robots : i!=j};
 
-setof(all_dvars) dvars = {<i,j,r> | i,j in nodes, r in robots};
 
 
-// rechability
-float g[nodes][nodes];
-
-// pre-processing
+/*************************************************************
+*********************** pre-processing ***********************
+*************************************************************/
 
 // generating the graph
 execute{
@@ -80,7 +90,7 @@ return Opl.sqrt(Opl.pow(task1.x-task2.x,2)+Opl.pow(task1.y-task2.y,2))
 
 // random position of tasks
 for(var i in tasks){	// start is origin
-Location[i].x = Opl.rand(100); 
+Location[i].x = Opl.rand(100);
 Location[i].y = Opl.rand(100);
 
 }
@@ -101,88 +111,80 @@ timetaken[e.i][e.j] = edist[e]/velocity;
 }
 
 // adjacency matrix
-for(var e in edges){
+for(var e in edges)
+{
 	g[e.i][e.j] = timetaken[e.i][e.j];
 
 	if(e.j ==0){
 		g[e.i][e.j] = 0;}	//can't go back to start
-	
+
 	if ((e.i > 1) & (e.j > 1)){
 		if((ak[e.i].start + timetaken[e.i][e.j]) > (ak[e.j].end - dk[e.j])){
 			g[e.i][e.j] = 0;}
-		
-		if((ak[e.i].end + timetaken[e.i][e.j]) < ak[e.j].start){
-			g[e.i][e.j] = 0;} 
+
+		if((ak[e.i].end + timetaken[e.i][e.j]) > (ak[e.j].end - dk[e.j])){
+			g[e.i][e.j] = 0;}
+
+//		if((ak[e.i].end + timetaken[e.i][e.j]) < ak[e.j].start){
+//			g[e.i][e.j] = 0;}
 	}
   }
+
 }
 
 
-
-
+/*************************************************************
+***************************** Model **************************
+*************************************************************/
 
 // Other constants
-int Q2 = min(i in tasks) dk[i];
-int Q3 = max(i in tasks) (ak[i].end - ak[i].start);
-float H = 10.0;
+int Q2 = (min(i in tasks) dk[i]) - 5;
+int Q3 = (max(i in tasks) (ak[i].end - ak[i].start)) + 100;
+float H = max(i,j in nodes: i!=j && g[i][j] >0) (g[i][j]); //all xind becomes 1 if min is used
+
 
 // decision variables
-
 dvar boolean xind[dvars];
-dvar float xtime[dvars];
-//dvar float arrival[dvars];
+dvar float+ xtime[dvars];
 
-dexpr float TotalTime = sum(j in tasks) fk[j] * (sum(r in robots, i in nodes) xtime[<i,j,r>]) ;
 
-// optimize
+// objective function
+dexpr float TotalTime = sum(j in tasks) fk[j] * (sum(r in robots, i in nodes : i!=j) xtime[<i,j,r>]) ;
 
 maximize TotalTime;
 
+
+// constraints
 subject to{
-forall(r in robots, i in nodes, j in nodes)
+forall(r in robots, i in nodes, j in nodes : i!=j)
   Quota2:
-  xind[<i,j,r>] <= 1-Q2 + xtime[<i,j,r>]; 
+  xind[<i,j,r>] <= 1-Q2 + xtime[<i,j,r>];
 
-forall(r in robots, i in nodes, j in nodes)
+forall(r in robots, i in nodes, j in nodes : i!=j)
   Quota3:
-  xtime[<i,j,r>] <= Q3* xind[<i,j,r>]; 
+  xtime[<i,j,r>] <= Q3 * xind[<i,j,r>];
 
-forall(j in tasks)
+forall(j in nodes)
   Quota4:
-  sum(r in robots, i in nodes)
+  sum(r in robots, i in nodes : i!=j)
     xind[<i,j,r>] == qk[j];
- 
+
 forall(r in robots, i in nodes)
   Correct1:
   sum(j in nodes: j!=i)
     xind[<i,j,r>] <= 1;
-     
+
 forall(r in robots, j in nodes)
   Correct2:
-  sum(i in nodes: j!=i)
+  sum(i in nodes: i!=j)
     xind[<i,j,r>] <= 1;
-     
-forall(r in robots, i in nodes, j in nodes)
-  Quota1:
-  xind[<i,j,r>] <= 1;
-  
-forall(r in robots, i in nodes, j in tasks)
+
+forall(r in robots, i in nodes, j in nodes : i!=j)
   Activation:
-  xtime[<i,j,r>] >= dk[j];
-  
-forall(r in robots, i in nodes, j in nodes)
+  xtime[<i,j,r>] >= dk[i];
+
+forall(r in robots, i in nodes, j in nodes : i!=j)
   Motion:
   H*xind[<i,j,r>] <= g[i][j];
-  
-/*forall(r in robots, i in nodes, j in tasks)
-	Define:
-	xtime[<i,j,r>] == ak[j].end - arrival[<i,j,r>];
 
-forall(r in robots, i in tasks, j in nodes)
-  Arrive:
-  arrival[<i,j,r>] == dk[i] + timetaken[i][j];
-*/
 }
-
-
-

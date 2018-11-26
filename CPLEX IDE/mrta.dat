@@ -3,12 +3,21 @@
  * Author: dharini
  * Creation Date: Nov 3, 2018 at 1:56:55 PM
  *********************************************/
+
+// Number of tasks
 tau = 5;
 
+// Number of robots
 R = 2;
 
-ak = [<0,100>, <5,150>, <20,300>, <10,400>, <35,500>];
-qk = [1,1,1,1,1];
-dk = [10,10,10,10,10];
+// Tasks activation time windows
+ak = [<0,50>, <35,50>, <20,60>, <50,80>, <90,100>];
 
+// Quota = no. of robots required per task
+qk = [0, 2,1,1,2,1];
+
+// Time required to finish the task
+dk = [0, 10,10,10,10,8];
+
+// constant velocity of all the robots
 velocity = 10;
