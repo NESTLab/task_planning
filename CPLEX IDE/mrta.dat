@@ -21,3 +21,20 @@ dk = [0, 10,10,10,10,8];
 
 // constant velocity of all the robots
 velocity = 10;
+
+// exporting solution for post processing
+// NOTE: Sheet data is not supported in Linux
+//SheetConnection sheet("<your_path>\\my_sheet.xls"); 
+//xind to SheetWrite(sheet,"A1:A60");
+//xtime to SheetWrite(sheet,"B1:B60");
+//tau to SheetWrite(sheet,"C1:C1");
+//R to SheetWrite(sheet,"C2:C2");
+//dk to SheetWrite(sheet,"D1:D6");
+//ak to SheetWrite(sheet,"E1:F6");
+//timetaken to SheetWrite(sheet,"G1:L6");
+//g to SheetWrite(sheet,"M1:R6");
+
+
+
+
+
