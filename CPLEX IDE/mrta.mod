@@ -3,7 +3,7 @@
  * Author: dharini
  * Creation Date: Nov 3, 2018 at 1:56:55 PM
  *********************************************/
-
+ 
 /*************************************************************
 *********************** initialization ***********************
 *************************************************************/
@@ -88,12 +88,14 @@ function getDistance(task1,task2){
 return Opl.sqrt(Opl.pow(task1.x-task2.x,2)+Opl.pow(task1.y-task2.y,2))
 }
 
+
 // random position of tasks
 for(var i in tasks){	// start is origin
-Location[i].x = Opl.rand(100);
+Location[i].x = Opl.rand(100); 
 Location[i].y = Opl.rand(100);
-
 }
+
+
 
 // storing the distances
 for(var e in edges){
@@ -117,19 +119,19 @@ for(var e in edges)
 
 	if(e.j ==0){
 		g[e.i][e.j] = 0;}	//can't go back to start
-
+	
 	if ((e.i > 1) & (e.j > 1)){
 		if((ak[e.i].start + timetaken[e.i][e.j]) > (ak[e.j].end - dk[e.j])){
 			g[e.i][e.j] = 0;}
-
+			
 		if((ak[e.i].end + timetaken[e.i][e.j]) > (ak[e.j].end - dk[e.j])){
 			g[e.i][e.j] = 0;}
-
-//		if((ak[e.i].end + timetaken[e.i][e.j]) < ak[e.j].start){
-//			g[e.i][e.j] = 0;}
+			
+		if((ak[e.i].end + timetaken[e.i][e.j]) < ak[e.j].start){
+			g[e.i][e.j] = 0;} 
 	}
   }
-
+	
 }
 
 
@@ -138,14 +140,15 @@ for(var e in edges)
 *************************************************************/
 
 // Other constants
-int Q2 = (min(i in tasks) dk[i]) - 5;
-int Q3 = (max(i in tasks) (ak[i].end - ak[i].start)) + 100;
-float H = max(i,j in nodes: i!=j && g[i][j] >0) (g[i][j]); //all xind becomes 1 if min is used
+int Q2 = (min(i in tasks) dk[i]);
+int Q3 = (max(i in tasks) (ak[i].end - ak[i].start));
+float H = min(i,j in nodes: i!=j && g[i][j] >0) (g[i][j]); 
 
 
 // decision variables
 dvar boolean xind[dvars];
 dvar float+ xtime[dvars];
+//dvar float+ y[dvars];
 
 
 // objective function
@@ -156,35 +159,45 @@ maximize TotalTime;
 
 // constraints
 subject to{
+//forall(r in robots, i in nodes, j in nodes : i!=j)
+//  Quota2:
+//  xind[<i,j,r>] <= 1-Q2 + xtime[<i,j,r>]; 
+  
 forall(r in robots, i in nodes, j in nodes : i!=j)
-  Quota2:
-  xind[<i,j,r>] <= 1-Q2 + xtime[<i,j,r>];
+  Quota2_new:
+  xtime[<i,j,r>] >= Q2 * xind[<i,j,r>]; 
 
 forall(r in robots, i in nodes, j in nodes : i!=j)
   Quota3:
-  xtime[<i,j,r>] <= Q3 * xind[<i,j,r>];
+  xtime[<i,j,r>] <= Q3 * xind[<i,j,r>]; 
 
 forall(j in nodes)
   Quota4:
   sum(r in robots, i in nodes : i!=j)
     xind[<i,j,r>] == qk[j];
-
+  
 forall(r in robots, i in nodes)
   Correct1:
   sum(j in nodes: j!=i)
     xind[<i,j,r>] <= 1;
-
+     
 forall(r in robots, j in nodes)
   Correct2:
   sum(i in nodes: i!=j)
     xind[<i,j,r>] <= 1;
-
-forall(r in robots, i in nodes, j in nodes : i!=j)
-  Activation:
-  xtime[<i,j,r>] >= dk[i];
-
+     
+//forall(r in robots, i in nodes, j in nodes : i!=j)
+//  Quota1:
+//  xind[<i,j,r>] <= 1;		// boolean takes care of it 
+    
+//forall(r in robots, i in nodes, j in nodes : i!=j)
+//  Activation:
+//  xtime[<i,j,r>] >= dk[i];
+  
 forall(r in robots, i in nodes, j in nodes : i!=j)
   Motion:
   H*xind[<i,j,r>] <= g[i][j];
-
+  
 }
+
+
