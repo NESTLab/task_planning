@@ -24,7 +24,7 @@ tuple edge{
 int i;
 int j;
 }
-setof(edge) edges = {<i,j> | i,j in nodes : i != j};
+setof(edge) edges = {<i,j> | i,j in nodes};
 
 // distance between nodes
 float edist[edges];
@@ -47,10 +47,10 @@ tuple activation{
 int start;
 int end;
 }
-activation ak[tasks] = ...;
+activation ak[nodes] = ...;
 
 // activation constant
-float fk[tasks];
+float fk[nodes];
 
 // Quota = no. of robots required per task
 int qk[nodes] = ...;
@@ -61,18 +61,18 @@ int dk[nodes] = ...;
 
 /*********************** Motion attributes ***********************/
 // constant velocity of all the robots
-int velocity = ...;
+float velocity = ...;
 
 // time taken to traverse each egde
 float timetaken[nodes][nodes];
 
 // attributes of a decision variable
 tuple all_dvars{
+int r;
 int i;
 int j;
-int r;
 }
-setof(all_dvars) dvars = {<i,j,r> | i,j in nodes, r in robots : i!=j};
+setof(all_dvars) dvars = {<r,i,j> |  r in robots, i,j in nodes};
 
 
 
@@ -103,6 +103,7 @@ edist[e] = getDistance(Location[e.i],Location[e.j])
 }
 
 // activation constant
+fk[0] = 0;
 for(var i in tasks){
 fk[i] = 1/(ak[i].end - ak[i].start);
 }
@@ -117,10 +118,10 @@ for(var e in edges)
 {
 	g[e.i][e.j] = timetaken[e.i][e.j];
 
-	if(e.j ==0){
+	if(e.j == 0){
 		g[e.i][e.j] = 0;}	//can't go back to start
 	
-	if ((e.i > 1) & (e.j > 1)){
+	if ((e.i > 0) & (e.j > 0)){
 		if((ak[e.i].start + timetaken[e.i][e.j]) > (ak[e.j].end - dk[e.j])){
 			g[e.i][e.j] = 0;}
 			
@@ -134,7 +135,6 @@ for(var e in edges)
 	
 }
 
-
 /*************************************************************
 ***************************** Model **************************
 *************************************************************/
@@ -142,62 +142,59 @@ for(var e in edges)
 // Other constants
 int Q2 = (min(i in tasks) dk[i]);
 int Q3 = (max(i in tasks) (ak[i].end - ak[i].start));
-float H = min(i,j in nodes: i!=j && g[i][j] >0) (g[i][j]); 
-
+float H = min(i,j in nodes: g[i][j] >0) (g[i][j]); 
 
 // decision variables
 dvar boolean xind[dvars];
 dvar float+ xtime[dvars];
-//dvar float+ y[dvars];
 
 
 // objective function
-dexpr float TotalTime = sum(j in tasks) fk[j] * (sum(r in robots, i in nodes : i!=j) xtime[<i,j,r>]) ;
-
+dexpr float TotalTime = sum(j in nodes) fk[j] * (sum(r in robots, i in nodes) xtime[<r,i,j>]) ;
 maximize TotalTime;
 
 
 // constraints
-subject to{
-//forall(r in robots, i in nodes, j in nodes : i!=j)
-//  Quota2:
-//  xind[<i,j,r>] <= 1-Q2 + xtime[<i,j,r>]; 
-  
-forall(r in robots, i in nodes, j in nodes : i!=j)
+subject to {
+ 
+forall(r in robots, i in nodes, j in nodes){
   Quota2_new:
-  xtime[<i,j,r>] >= Q2 * xind[<i,j,r>]; 
-
-forall(r in robots, i in nodes, j in nodes : i!=j)
-  Quota3:
-  xtime[<i,j,r>] <= Q3 * xind[<i,j,r>]; 
-
-forall(j in nodes)
-  Quota4:
-  sum(r in robots, i in nodes : i!=j)
-    xind[<i,j,r>] == qk[j];
-  
-forall(r in robots, i in nodes)
-  Correct1:
-  sum(j in nodes: j!=i)
-    xind[<i,j,r>] <= 1;
-     
-forall(r in robots, j in nodes)
-  Correct2:
-  sum(i in nodes: i!=j)
-    xind[<i,j,r>] <= 1;
-     
-//forall(r in robots, i in nodes, j in nodes : i!=j)
-//  Quota1:
-//  xind[<i,j,r>] <= 1;		// boolean takes care of it 
-    
-//forall(r in robots, i in nodes, j in nodes : i!=j)
-//  Activation:
-//  xtime[<i,j,r>] >= dk[i];
-  
-forall(r in robots, i in nodes, j in nodes : i!=j)
-  Motion:
-  H*xind[<i,j,r>] <= g[i][j];
-  
+  xtime[<r,i,j>] >= Q2 * xind[<r,i,j>]; 
 }
+
+forall(r in robots, i in nodes, j in nodes){
+  Quota3:
+  xtime[<r,i,j>] <= Q3 * xind[<r,i,j>]; 
+}
+
+forall(j in nodes){
+  Quota4:
+  sum(r in robots, i in nodes) xind[<r,i,j>] == qk[j];
+}  
+  
+forall(r in robots, i in nodes){
+  Correct1:
+  sum(j in nodes) xind[<r,i,j>] <= 1;
+}
+
+forall(r in robots, j in nodes){
+  Correct2:
+  sum(i in nodes) xind[<r,i,j>] <= 1; 
+}
+    
+forall(r in robots, i in nodes, j in nodes){
+  Motion:
+  H*xind[<r,i,j>] <= g[i][j];
+}
+   
+forall(r in robots, i in nodes,j in nodes){
+  define:
+  xtime[<r,i,j>] + xind[<r,i,j>] * (ak[i].end + dk[i] + timetaken[i][j] - ak[j].end) - sum(k in nodes)xtime[<r,k,i>] <= 0;
+  }
+
+}
+
+
+
 
 
