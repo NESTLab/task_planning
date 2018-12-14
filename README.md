@@ -1,6 +1,15 @@
 ## Multi-Robot Task Planning with Space-Time Constraints for Coordination Tasks
 Optimization Programming Language (OPL) model for MILP formulation of Multi-Robot Task Planning problem.
 
+### Problem Statement
+Consider a homogeneous swarm of R robots, which need to perform a set of tasks T in an known environment with C as starting point. Each task is characterized by it’s location, activation window, execution time andrequired team size; which are accounted by the following attributes:
+1. Static: having a fixed location.
+2. Active dynamically: meaning the tasks have to be performed in the fixed activation window.
+3. Task Duration: time required to execute/perform the task.
+4. Quota: the number of robots in the team, necessary to finish the task.
+
+Problem(Task Planning).Given the starting position of robots and the locations of the tasks in the environment,the objective is to find an optimal schedule for the robots to perform all the tasks by fulfilling the quota, within the activation window, while minimizing the makespan
+
 ### Pre-requisite
 [Install IBM CPLEX Optimization Studio](http://www-01.ibm.com/support/docview.wss?uid=swg27050618)
 (Free for students)
