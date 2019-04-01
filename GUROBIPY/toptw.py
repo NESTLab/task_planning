@@ -1,13 +1,22 @@
-#######################################################################################################################
-                                         # TOP with time windows #
-#######################################################################################################################
+'''
+MILP Formulation for Team Orienteering Problem with Time Windows
+
+This script requires that
+    *'gurobipy'
+    *'numpy'
+be installed within the Python environment you are running this script in.
+
+This file can also be imported as a module and contains the following functions:
+    * planner - finds an optimized path given certain constraints
+'''
 
 
+# Importing existing python modules
 from gurobipy import *
 import numpy as np
-import random as rnd
-import itertools
-import csv
+
+# Importing required project modules
+import environment as env
 
 
 class TOPTW:
@@ -83,89 +92,28 @@ class TOPTW:
         return model
 
 
-    def generate_test_instance(self, noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, maxStartTime, maxTimeInterval):
-        # Set of robots
-        W = ["W" + str(i) for i in range(noOfWorkerRobots)]
-        # Set of task nodes
-        T = ["T" + str(i) for i in range(noOfTasks)]
-        # Set of start nodes
-        S = ["S" + str(i) for i in range(noOfStartNodes)]
-        # Set of end nodes
-        E = ["E"]
 
-        U = [i for i in T + E]
-
-        # Set of task duration
-        D = {t: rnd.randint(1, maxTaskDuration) for t in T}
-        D["S0"] = 0
-        # Set of quota requirements
-        Q = {t: rnd.randint(1, noOfWorkerRobots - 1) for t in T}
-
-        # Set of maximum start times
-        O = {t: rnd.randint(1, maxStartTime) for t in T}
-        # Set of task end times
-        EndTime = {t: rnd.randint(1, maxTimeInterval) + O[t] for t in T}
-        C = {t: (EndTime[t] - D[t]) for t in T}
-        # Activation Window
-        A = {t: (O[t], EndTime[t]) for t in T}
-
-        # Task Locations
-        T_loc = {task: (100 * rnd.random(), 100 * rnd.random()) for task in T}
-
-        # start and end locations
-        S_loc = {loc: (100 * rnd.random(), 100) for loc in S}
-        E_loc = {loc: (100 * rnd.random(), 100) for loc in E}
-
-        N_loc = {**S_loc, **T_loc, **E_loc}
-
-        return W, S, T, E, N_loc, Q, O, C, D
-
-    def collect_data(self, robots_range, task_range, Tmax_range, noOfStartNodes, maxTaskDuration, T_max, maxTimeInterval):
-        for T_max, noOfWorkerRobots, noOfTasks in itertools.product(Tmax_range, robots_range, task_range):
-
-            print("********************************************************")
-            print(noOfWorkerRobots, noOfTasks, T_max)
-            runtime = 0
-            while(runtime < 0.01):
-                # Generate feasible environments
-                W, S, T, E, N_loc, Q, O, C, D = self.generate_test_instance(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, T_max, maxTimeInterval)
-                # Run planner
-                plan = self.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max)
-
-                runtime = plan.Runtime
-                # Save data
-                row = [noOfWorkerRobots, noOfTasks, T_max, runtime]
-
-                with open('experiment1.csv', 'a') as csvFile:
-                    writer = csv.writer(csvFile)
-                    writer.writerow(row)
-
-                csvFile.close()
 
 
 def main():
-    ## single case
+    '''Run TOPF with randomly generated input'''
+    # Provide basic input
     noOfTasks = 8
     noOfWorkerRobots = 4
     noOfStartNodes = 1
     maxTimeInterval = 50
     maxStartTime = 400 - maxTimeInterval
     maxTaskDuration = 10
-    velocity = 1
-    T_max = 1000
-    
-    trial = TOPTW(velocity)
-    W, S, T, E, N_loc, Q, O, C, D = trial.generate_test_instance(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, T_max, maxTimeInterval)
-    trial.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max);
+    velocity = 1; T_max = 1000
 
-    ## experiments
-    # robots_range = [3, 4]
-    # task_range = [7]
-    # Tmax_range = [300]
-    # velocity = 1
-    #
-    # trial = TOPTW(velocity)
-    # trial.collect_data(robots_range, task_range, Tmax_range, noOfStartNodes, maxTaskDuration, maxStartTime, maxTimeInterval)
+    # Read input -> Plan -> Save computational data (.csv)
+    # randomly generated locations of tasks and robots
+    W, S, T, E, N_loc, Q, O, C, D = env.generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes,
+                                                               maxTaskDuration, T_max, maxTimeInterval)
+    # Object of the planner
+    milp = TOPTW(velocity)
+    # Optimize!!!
+    milp.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max)
 
 
 if __name__ == "__main__":
