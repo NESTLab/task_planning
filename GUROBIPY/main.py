@@ -20,12 +20,13 @@ This file can also be imported as a module and contains the following functions:
 # Importing existing python modules
 import os
 import itertools
+import numpy as np
 from gurobipy import *
 
 # Importing required project modules
 import environment as env
 import topf
-import toptw
+#import toptw
 from visualization import Visualization_TOPF
 from collection import save_topf_data, save_toptw_data
 
@@ -61,7 +62,7 @@ def single_run_topf_random_input(noOfRobots, noOfTasks, noOfDepots, L, T_max, ve
     print(routes)
 
 
-def multi_run_topf_random_input(robots_range, task_range, depot_range, L_range, Tmax_range, velocity, expt_name, auto_open_flag=0):
+def multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag, auto_open_flag=0):
     '''
     Multiple runs for TOPF experiments with randomly generated input
     :param robots_range: list of number of robots
@@ -71,11 +72,17 @@ def multi_run_topf_random_input(robots_range, task_range, depot_range, L_range, 
     :param Tmax_range: list of total flight time
     :param velocity: velocity of the robots
     :param expt_name: name of .csv file
+    :param planner_flag: 1 for planning without capacity constraints
     :param auto_open_flag: 0 to disable plot pop-up
     :return: Nothing, just plots (.html) the interactive route for each robot and saves data (.csv)
     '''
-    for L, T_max, noOfRobots, noOfTasks, noOfDepots in itertools.product(L_range, Tmax_range, robots_range, task_range, depot_range):
-
+    input_data = env.generate_input_combinations(robots_range, node_range, L_range, Tmax_range)
+    for row in input_data:
+        [noOfRobots, noOfTasks, noOfDepots, L, T_max] = row
+        noOfRobots = int(noOfRobots)
+        noOfTasks = int(noOfTasks)
+        noOfDepots = int(noOfDepots)
+        T_max = int(T_max)
         print("===========================================================")
         print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
 
@@ -83,12 +90,15 @@ def multi_run_topf_random_input(robots_range, task_range, depot_range, L_range, 
         while(True):
 
             # randomly generated locations of tasks and robots
-            K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots)
+            K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(int(noOfRobots), int(noOfTasks), int(noOfDepots))
 
             # Object of the planner
             milp = topf.TOPF(velocity)
             # Optimize model
-            c, plan = milp.planner(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
+            if(planner_flag == 1):
+                c, plan = milp.planner(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
+            else:
+                c, plan = milp.planner_with_flow(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
 
             # Actual runtime
             # get out of the loop if runtime (model) is feasible
@@ -242,16 +252,22 @@ def main():
     ###################################################################################################################
 
     '''Experiments: TOPF with randomly generated input '''
-    expt_name = 'topf_experiment1'
+    expt_name = 'topf_experiment_2R'
     # Provide basic input for multiple runs
-    robots_range = [2,3,4]
-    task_range = [6,7,8]
-    depot_range = [1,2,3]
-    L_range = [200,300]
-    Tmax_range = [400,500]
+    robots_range = [2]#,3,4,5,6,7,8,9,10]
+    # task_range = [6,7,8]
+    # depot_range = [1,2,3]
+    node_range = [4,5,9,10,14,15,19,20,24,25,29,30]
+    L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  #for arena size 100 x 100
+    Tmax_range = [400]
     velocity = 1
+
     # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
-    multi_run_topf_random_input(robots_range, task_range, depot_range, L_range, Tmax_range, velocity, expt_name)
+    multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=1)
+
+    expt_name = 'topf_experiment_2R_with_flow'
+    multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=2)
+
 
 
     ###################################################################################################################
@@ -273,7 +289,7 @@ def main():
 
     ###################################################################################################################
 
-    '''Run TOPF with randomly generated input'''
+    '''Run TOPTW with randomly generated input'''
     # # Provide basic input
     # noOfTasks = 8
     # noOfWorkerRobots = 4

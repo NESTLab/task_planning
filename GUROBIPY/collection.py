@@ -9,8 +9,9 @@ import csv
 
 def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name):
     runtime = plan.Runtime
+    quality = plan.ObjVal
     # Save data
-    row = [noOfRobots, noOfTasks, noOfDepots, L, T_max, runtime]
+    row = [noOfRobots, noOfTasks, noOfDepots, L, T_max, runtime, quality]
 
     with open(expt_name+'.csv', 'a') as csvFile:
         writer = csv.writer(csvFile)

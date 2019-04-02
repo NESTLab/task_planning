@@ -2,7 +2,7 @@
 #SBATCH -J sh
 #SBATCH -n 12
 #SBATCH -N 1
-#SBTACH -p short
+#SBTACH -p long
 #SBATCH --mem 32G
 
 # Stop execution after any error
@@ -30,7 +30,7 @@ MYUSER=$(whoami)
 # (Don't change this)
 LOCALDIR=/local
 # To be changed as per experiment (my cluster environment)
-MYDIR=~/work/topf_3_20
+MYDIR=~/work/topf_4_1_2R
 
 # Folder where you want your data to be stored (my cluster environment)
 DATADIR=$MYDIR/data
@@ -79,6 +79,8 @@ python3 $MYDIR/main.py
 
 # Transfer generated *.dat files into home directory
 # Create the two folders (my cluster environment)
+mkdir $DATADIR && cd $DATADIR
+mkdir $DATADIR/csv && mkdir $DATADIR/img
 cp -a *.csv $DATADIR/csv
 cp -a *.html $DATADIR/img
 
