@@ -30,7 +30,7 @@ MYUSER=$(whoami)
 # (Don't change this)
 LOCALDIR=/local
 # To be changed as per experiment (my cluster environment)
-MYDIR=~/work/topf_4_1_2R
+MYDIR=~/work/topf_4_1_test1
 
 # Folder where you want your data to be stored (my cluster environment)
 DATADIR=$MYDIR/data
@@ -75,6 +75,9 @@ trap cleanup EXIT SIGINT SIGTERM
 # Execute job
 # Commands
 module load gurobi
+#python3 -m pip install plotly --user
+mkdir C-mdvrp
+cp $MYDIR/C-mdvrp/* $WORKDIR/C-mdvrp/
 python3 $MYDIR/main.py
 
 # Transfer generated *.dat files into home directory
