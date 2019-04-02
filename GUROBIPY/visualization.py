@@ -15,6 +15,8 @@ import matplotlib.animation as animation
 
 
 '''Visualization for TOPF'''
+
+
 class Visualization_TOPF:
     def __init__(self, K, T, D, S, T_loc, D_loc, c):
         self.K = K
@@ -68,7 +70,6 @@ class Visualization_TOPF:
 
         return remainingFuel
 
-
     def taskNodesTrace(self, remainingFuel):
         taskTrace = go.Scatter(
             text=[],
@@ -92,7 +93,8 @@ class Visualization_TOPF:
 
         for t in self.T_loc:
             x, y = self.T_loc.get(t)
-            disp_text = 'NodeID: ' + t + '<br>f_left: ' + "{0:.2f}".format(remainingFuel[t])
+            disp_text = 'NodeID: ' + t + '<br>f_left: ' + \
+                "{0:.2f}".format(remainingFuel[t])
             taskTrace['x'] += tuple([x])
             taskTrace['y'] += tuple([y])
             taskTrace['text'] += tuple([t])
@@ -122,7 +124,8 @@ class Visualization_TOPF:
 
         for s in S_loc:
             x, y = S_loc.get(s)
-            disp_text = 'NodeID: ' + s  # + '<br>f_left: ' + "{0:.2f}".format(f_left)
+            # + '<br>f_left: ' + "{0:.2f}".format(f_left)
+            disp_text = 'NodeID: ' + s
             startTrace['x'] += tuple([x])
             startTrace['y'] += tuple([y])
             startTrace['text'] += tuple([s])
@@ -139,7 +142,8 @@ class Visualization_TOPF:
             x=[],
             y=[],
             text=[],
-            line=dict(width=1, color=colors[rnd.randint(0, len(colors) - 1)], dash='dash'),
+            line=dict(width=1, color=colors[rnd.randint(
+                0, len(colors) - 1)], dash='dash'),
             hoverinfo='none',
             showlegend=True,
             mode='lines')
@@ -177,7 +181,7 @@ class Visualization_TOPF:
                 ["Weight: " + "{0:.2f}".format(np.linalg.norm(np.array([x0, y0]) - np.array([x1, y1])))])
         return edge_trace, node_info_trace
 
-    def drawArena(self,remainingFuel, isEdge=1):
+    def drawArena(self, remainingFuel, isEdge=1):
         task_trace = self.taskNodesTrace(remainingFuel)
         start_trace = self.startNodesTrace(self.D_loc)
         # end_trace = endNodesTrace(E_loc)
@@ -186,7 +190,8 @@ class Visualization_TOPF:
 
         if isEdge:
             for k in self.arcsInOrder:
-                edge_trace, node_info_trace = self.edgeTrace(self.D_loc, self.arcsInOrder[k])
+                edge_trace, node_info_trace = self.edgeTrace(
+                    self.D_loc, self.arcsInOrder[k])
                 edge_trace.name = str(k)
                 data.append(edge_trace)
                 data.append(node_info_trace)
@@ -219,7 +224,8 @@ class Visualization_TOPF:
         remainingFuel = self.preprocessing(model)
 
         fig = self.drawArena(remainingFuel, 1)
-        py.plot(fig, filename=name + '.html', auto_open=auto_open_flag, include_plotlyjs='cdn')
+        py.plot(fig, filename=name + '.html',
+                auto_open=auto_open_flag, include_plotlyjs='cdn')
 
         with open(name + '.csv', 'w') as csv_file:
             writer = csv.writer(csv_file)
@@ -230,8 +236,10 @@ class Visualization_TOPF:
 
     def save_plot_topf_heuristic(self, arcsInOrder, name, auto_open_flag):
         self.arcsInOrder = arcsInOrder
-        fig = self.drawArena(1)
-        py.plot(fig, filename=name+ '.html', auto_open=auto_open_flag, include_plotlyjs='cdn')
+        remainingFuel = {t: 0 for t in self.T}
+        fig = self.drawArena(remainingFuel, 1)
+        py.plot(fig, filename=name + '.html',
+                auto_open=auto_open_flag, include_plotlyjs='cdn')
 
         with open(name+'.csv', 'w') as csv_file:
             writer = csv.writer(csv_file)
@@ -239,13 +247,11 @@ class Visualization_TOPF:
                 writer.writerow([key, value])
 
 
-
-
 '''Visualization for TOPTW'''
 # TODO: incomplete
+
+
 class Visualization_TOPTW:
     def __init__(self, model):
 
         self.v = model.getVars()
-
-

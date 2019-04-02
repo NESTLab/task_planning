@@ -46,19 +46,23 @@ class Heuristics_TOPF:
         self.c = {t: np.linalg.norm(np.array(N_loc.get(t[0])) - np.array(N_loc.get(t[1]))) for t in iter(self.edges)}
         self.f = self.c
 
-        self.conversionToBeReversed = False
+        
+        conversionToBeReversed = False
 
-        self.diversificationParam = 1
-        self.noImprovementIterations = 0
         self.maxIterations = 25
 
-        # convert the arc based path to nodeBased path
-        self.candidateSolution = {}
+        # Final heuristic Solution to be stored here
+        self.arcsInOrderHeuristic = {k: [(self.S[0], self.S[0])] for k in self.K}
+
+        # ILS related parameters
+        #self.noImprovementIterations = 0
+        #self.diversificationParam = 0
+
+       
 
 
 
     def fuelCheck(self, path, maxFuel):
-        self.conversionToBeReversed = False
         if not all(isinstance(n, tuple) for n in path):
             path = self.pathArcRepresentation(path)
 
@@ -120,10 +124,10 @@ class Heuristics_TOPF:
 
 
     def checkadditionsInPath(self, path, t):
-        self.conversionToBeReversed = False
+        conversionToBeReversed = False
         if not all(isinstance(n, tuple) for n in path):
             path = self.pathArcRepresentation(path)
-            self.conversionToBeReversed = True
+            conversionToBeReversed = True
         for arc in path:
             predecessor, successor = self.predecessorSuccessorComponents(path, arc)
             newPath = predecessor + [(arc[0], t)] + [(t, arc[1])] + successor
@@ -132,39 +136,33 @@ class Heuristics_TOPF:
             fuelCheckPassed, _ = self.fuelCheck(newPath, self.L)
             timeCheckPassed, _ = self.timeCheck(newPath, self.T_max)
             if fuelCheckPassed and timeCheckPassed:
-                if self.conversionToBeReversed:
+                if conversionToBeReversed:
                     newPath = self.pathNodeRepresentation(newPath)
                 return newPath, True
-        if self.conversionToBeReversed:
+        if conversionToBeReversed:
             path = self.pathNodeRepresentation(path)
         return path, False
 
 
 
-    def algorithm1(self):
+    def computeGreedySolution(self):
         # Algorithm 1
         # -----------
         # For each robot
         fuelConsumedHeuristic = {k: 0 for k in self.K}
-        arcsInOrderHeuristic = {k: [(self.S[0], self.S[0])] for k in self.K}
-        print(arcsInOrderHeuristic)
         T_Heuristic = self.T.copy()
         tasksAssigned = []
         for k in self.K:
             for t in T_Heuristic:
-                newPath, bool_c = self.checkadditionsInPath(arcsInOrderHeuristic[k], t)
+                newPath, bool_c = self.checkadditionsInPath(self.arcsInOrderHeuristic[k], t)
                 if bool_c:
-                    arcsInOrderHeuristic[k] = newPath
+                    self.arcsInOrderHeuristic[k] = newPath
                     fuelConsumedHeuristic[k] = self.pathLength(newPath)
-                    pprint.pprint(arcsInOrderHeuristic)
+                    pprint.pprint(self.arcsInOrderHeuristic)
                     pprint.pprint(fuelConsumedHeuristic)
                     tasksAssigned.append(t)
                     T_Heuristic.remove(t)
                     print(T_Heuristic)
-
-        # TODO arcsinorderheuristic
-
-    def algorithm4(self):
         # Algorithm 4
         # -----------
         # Add Depots in paths
@@ -172,14 +170,11 @@ class Heuristics_TOPF:
         D_Heuristic.remove(self.S[0])
         for k in self.K:
             for d in D_Heuristic:
-                newPath, bool_c = self.checkadditionsInPath(arcsInOrderHeuristic[k], d)
+                newPath, bool_c = self.checkadditionsInPath(self.arcsInOrderHeuristic[k], d)
                 if bool_c:
-                    arcsInOrderHeuristic[k] = newPath
+                    self.arcsInOrderHeuristic[k] = newPath
                     D_Heuristic.remove(d)
-
-        pprint.pprint(arcsInOrderHeuristic)
-
-        remainingFuel = {t: 0 for t in self.T}
+        #pprint.pprint(self.arcsInOrderHeuristic)
 
 
     def pathNodeRepresentation(self, arcBasedPath):
@@ -209,7 +204,20 @@ class Heuristics_TOPF:
         else:
             return "No node with this name found!"
 
-
+    def pathLength(self, path):
+        l = 0
+        if not all(isinstance(n, tuple) for n in path):
+            path = self.pathArcRepresentation(path)
+        for arc in path:
+            if arc[0] not in self.D or arc[1] not in self.D or arc[0] != arc[1]:
+                l += self.c[arc]
+            elif arc[0] in self.D and arc[1] in self.D and arc[0] == arc[1]:
+                l += 0
+            else:
+                print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
+                raise ValueError(
+                    "pathLength() is behaving strangely for this arc.")
+        return l
 
     # Lets define our own tour cost function
     def tourCost(self, tour):
@@ -583,26 +591,35 @@ class Heuristics_TOPF:
     def ILS(self):
         thisSeed = rnd.randrange(sys.maxsize)
         rng = rnd.Random(thisSeed)
-
         rnd.seed(thisSeed)
         print("Random Seed:", thisSeed)
 
+        # Dict for holding the cnadidate solution
+        candidateSolution = {}
+
+
+        # Get the greedy solution computed
+        self.computeGreedySolution()
+
+        noImprovementIterations = 0
+        diversificationParam = 0
+
         for k in self.K:
-            self.candidateSolution[k] = self.pathNodeRepresentation(arcsInOrderHeuristic[k])
+            candidateSolution[k] = self.pathNodeRepresentation(self.arcsInOrderHeuristic[k])
             # Lets not initialize it at all
             # candidateSolution[k] = [S[0], S[0]]
         # Initial Solution -------------------------------------------------------
-        bestSolution = copy.deepcopy(self.candidateSolution)
+        bestSolution = copy.deepcopy(candidateSolution)
 
         # Local Search  ----------------------------------------------------------
         # Insert
-        self.nonVisitedTasks = self.tasksNotInTour(self.candidateSolution)
+        self.nonVisitedTasks = self.tasksNotInTour(candidateSolution)
         for k in self.K:
-            self.candidateSolution[k] = self.insert(self.candidateSolution[k], self.nonVisitedTasks)
-            nonVisitedTasks = self.tasksNotInTour(self.candidateSolution)
-        bestSolution, _ = self.compareSolWithBest(self.candidateSolution, bestSolution)
+            candidateSolution[k] = self.insert(candidateSolution[k], self.nonVisitedTasks)
+            self.nonVisitedTasks = self.tasksNotInTour(candidateSolution)
+        bestSolution, _ = self.compareSolWithBest(candidateSolution, bestSolution)
         # Swap
-        candidateSolution = self.swap(self.candidateSolution, self.maxIterations)
+        candidateSolution = self.swap(candidateSolution, self.maxIterations)
         bestSolution, _ = self.compareSolWithBest(candidateSolution, bestSolution)
         # Move
         candidateSolution = self.move(candidateSolution)
@@ -633,11 +650,11 @@ class Heuristics_TOPF:
             candidateSolution = self.perturb(candidateSolution, diversificationParam)
             # Local Search  ----------------------------------------------------------
             # Insert
-            nonVisitedTasks = self.tasksNotInTour(candidateSolution)
+            self.nonVisitedTasks = self.tasksNotInTour(candidateSolution)
             for k in self.K:
                 candidateSolution[k] = self.insert(
-                    candidateSolution[k], nonVisitedTasks)
-                nonVisitedTasks = self.tasksNotInTour(candidateSolution)
+                    candidateSolution[k], self.nonVisitedTasks)
+                self.nonVisitedTasks = self.tasksNotInTour(candidateSolution)
             bestSolution, boolImproved = self.compareSolWithBest(
                 candidateSolution, bestSolution)
             if boolImproved:
@@ -656,7 +673,7 @@ class Heuristics_TOPF:
                 noImprovementIterations = 0
             # 2-opt
             for k in self.K:
-                candidateSolution[k] = self.stochasticTwoOpt(candidateSolution[k], maxIterations)
+                candidateSolution[k] = self.stochasticTwoOpt(candidateSolution[k], self.maxIterations)
             bestSolution, boolImproved = self.compareSolWithBest(
                 candidateSolution, bestSolution)
             if boolImproved:
@@ -698,7 +715,7 @@ class Heuristics_TOPF:
 
         print('Best Solution:')
         pprint.pprint(bestSolution)
-        return bestSolution
+        return bestSolution, self.c
 
 
 
@@ -717,7 +734,7 @@ def main():
     K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots)
 
     inst = Heuristics_TOPF(K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity)
-    finalHeuristicSolution = inst.ILS()
+    finalHeuristicSolution, c = inst.ILS()
 
     arcsInOrderHeuristic = {}
     for k in K:
