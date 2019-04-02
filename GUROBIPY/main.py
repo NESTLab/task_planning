@@ -28,8 +28,8 @@ import environment as env
 import topf
 #import toptw
 from visualization import Visualization_TOPF
-from collection import save_topf_data, save_toptw_data
-
+from collection import save_topf_data, save_toptw_data, save_topf_data_heuristic
+from heuristics import Heuristics_TOPF
 
 def single_run_topf_random_input(noOfRobots, noOfTasks, noOfDepots, L, T_max, velocity, auto_open_flag=0):
     '''
@@ -174,6 +174,61 @@ def run_topf_with_test_instances(downloaded_instances, directory, expt_name, aut
         save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name)
 
 
+def single_run_heuristics(noOfRobots, noOfTasks, noOfDepots, L, T_max, velocity):
+    # randomly generated locations of tasks and robots
+    K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots)
+
+    inst = Heuristics_TOPF(K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity)
+    finalHeuristicSolution, c, seed, cost = inst.ILS()
+
+    arcsInOrderHeuristic = {}
+    for k in K:
+        arcsInOrderHeuristic[k] = inst.pathArcRepresentation(finalHeuristicSolution[k])
+    print(arcsInOrderHeuristic)
+
+    # Plot the routes using plotly interactive GUI
+    draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
+    # filename if the plot to be saved
+    name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
+    # plot and save
+    auto_open_flag = 0
+    draw.save_plot_topf_heuristic(arcsInOrderHeuristic, name, auto_open_flag)
+
+
+
+def multi_run_heuristics( robots_range, node_range, L_range, Tmax_range, velocity, expt_name):
+    input_data = env.generate_input_combinations(robots_range, node_range, L_range, Tmax_range)
+    for row in input_data:
+        [noOfRobots, noOfTasks, noOfDepots, L, T_max] = row
+        noOfRobots = int(noOfRobots)
+        noOfTasks = int(noOfTasks)
+        noOfDepots = int(noOfDepots)
+        T_max = int(T_max)
+        print("===========================================================")
+        print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
+
+        # randomly generated locations of tasks and robots
+        K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots)
+
+        inst = Heuristics_TOPF(K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity)
+        finalHeuristicSolution, c, seed, cost = inst.ILS()
+
+        arcsInOrderHeuristic = {}
+        for k in K:
+            arcsInOrderHeuristic[k] = inst.pathArcRepresentation(finalHeuristicSolution[k])
+        print(arcsInOrderHeuristic)
+
+        # Plot the routes using plotly interactive GUI
+        draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
+        # filename if the plot to be saved
+        name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
+        # plot and save
+        auto_open_flag = 0
+        draw.save_plot_topf_heuristic(arcsInOrderHeuristic, name, auto_open_flag)
+
+        # For data collection, generates .csv file
+        save_topf_data_heuristic(seed, cost, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name)
+
 
 def single_run_toptw_random_input(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, T_max, maxTimeInterval, velocity, auto_open_flag=0):
     '''
@@ -250,7 +305,7 @@ def main():
 
     ###################################################################################################################
 
-    '''Run TOPF with randomly generated input'''
+    '''Run TOPF MILP with randomly generated input'''
     # # Provide basic input
     # noOfRobots = 3
     # noOfTasks = 8
@@ -263,29 +318,29 @@ def main():
 
     ###################################################################################################################
 
-    '''Experiments: TOPF with randomly generated input '''
-    # change the name as per experiment
-    expt_name = 'topf_experiment_5R'
-    # Provide basic input for multiple runs
-    robots_range = [2]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
-    # task_range = [6,7,8]
-    # depot_range = [1,2,3]
-    node_range = [5, 10, 15, 20, 25, 30]
-    L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  #for arena size 100 x 100
-    Tmax_range = [400]
-    velocity = 1
-
-    # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
-    multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=1)
-
-    expt_name = 'topf_experiment_5R_with_flow'
-    multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=2)
+    '''Experiments: TOPF MILP with randomly generated input '''
+    # # change the name as per experiment
+    # expt_name = 'topf_experiment_5R'
+    # # Provide basic input for multiple runs
+    # robots_range = [2]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # # task_range = [6,7,8]
+    # # depot_range = [1,2,3]
+    # node_range = [5, 10, 15, 20, 25, 30]
+    # L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  #for arena size 100 x 100
+    # Tmax_range = [400]
+    # velocity = 1
+    #
+    # # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
+    # multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=1)
+    #
+    # expt_name = 'topf_experiment_5R_with_flow'
+    # multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=2)
 
 
 
     ###################################################################################################################
 
-    '''Run TOPF with C-mdvrp test instances'''
+    '''Run TOPF MILP with C-mdvrp test instances'''
     # expt_name = 'topf_cmdvrp13'
     # # Select which instance set
     # downloaded_instances = 0
@@ -296,6 +351,49 @@ def main():
 
 
     ###################################################################################################################
+
+
+
+
+
+
+
+
+
+    ###################################################################################################################
+
+    '''Run TOPF heuristic with randomly generated input'''
+    # noOfRobots = 3
+    # noOfTasks = 8
+    # noOfDepots = 2
+    # L = 200
+    # T_max = 500
+    # velocity = 1
+    #
+    # single_run_heuristics(noOfRobots, noOfTasks, noOfDepots, L, T_max, velocity)
+
+
+    ###################################################################################################################
+
+    '''Experiments: TOPF heuristic with randomly generated input '''
+    # change the name as per experiment
+    expt_name = 'topf_experiment_2RH'
+    # Provide basic input for multiple runs
+    robots_range = [2]  # [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # task_range = [6,7,8]
+    # depot_range = [1,2,3]
+    node_range = [5, 10, 15, 20, 25, 30]
+    L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  # for arena size 100 x 100
+    Tmax_range = [400]
+    velocity = 1
+
+    # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
+    multi_run_heuristics(robots_range, node_range, L_range, Tmax_range, velocity, expt_name)
+
+
+    ###################################################################################################################
+
+
 
 
 

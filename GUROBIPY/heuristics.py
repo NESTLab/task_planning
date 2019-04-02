@@ -715,7 +715,8 @@ class Heuristics_TOPF:
 
         print('Best Solution:')
         pprint.pprint(bestSolution)
-        return bestSolution, self.c
+        cost = self.tourCost(bestSolution)
+        return bestSolution, self.c, thisSeed, cost
 
 
 
@@ -734,7 +735,8 @@ def main():
     K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots)
 
     inst = Heuristics_TOPF(K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity)
-    finalHeuristicSolution, c = inst.ILS()
+    finalHeuristicSolution, c, seed, cost = inst.ILS()
+
 
     arcsInOrderHeuristic = {}
     for k in K:
