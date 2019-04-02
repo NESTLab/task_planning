@@ -53,11 +53,11 @@ def single_run_topf_random_input(noOfRobots, noOfTasks, noOfDepots, L, T_max, ve
     c, plan = milp.planner(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
 
     # Plot the routes using plotly interactive GUI
-    draw = Visualization_TOPF(plan, K, T, D, S, T_loc, D_loc, c)
+    draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
     # filename if the plot to be saved
     name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
     # plot and save
-    routes = draw.save_plot_topf(name, auto_open_flag)
+    routes = draw.save_plot_topf_milp(pplan, name, auto_open_flag)
     # Print the planned schedule
     print(routes)
 
@@ -86,6 +86,8 @@ def multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, v
         print("===========================================================")
         print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
 
+        # itr to track number of re-runs
+        count = 0
         # to re-run the randomly generated input if the model turns out to be infeasible
         while(True):
 
@@ -106,20 +108,30 @@ def multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, v
 
             if (plan.status == GRB.Status.INF_OR_UNBD or plan.status == GRB.Status.INFEASIBLE \
                     or plan.status == GRB.Status.UNBOUNDED):
-                continue
+                if(count < 5):
+                    count = count+1
+                    continue
+                else:
+                    break
             elif (plan.status == GRB.Status.OPTIMAL):
-                break
 
-        # Plot the routes using plotly interactive GUI
-        draw = Visualization_TOPF(plan, K, T, D, S, T_loc, D_loc, c)
-        # filename if the plot to be saved
-        name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
-        # plot and save
-        routes = draw.save_plot_topf(name, auto_open_flag)
-        print(routes)
+                # Plot the routes using plotly interactive GUI
+                draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
+                # filename if the plot to be saved
+                if (planner_flag == 1):
+                    name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
+                else:
+                    name = 'Fplot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
 
-        # For data collection, generates .csv file
-        save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name)
+                # plot and save
+                routes = draw.save_plot_topf_milp(plan, name, auto_open_flag)
+                print(routes)
+
+                # For data collection, generates .csv file
+                save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name)
+
+
+
 
 
 def run_topf_with_test_instances(downloaded_instances, directory, expt_name, auto_open_flag=0):
@@ -151,11 +163,11 @@ def run_topf_with_test_instances(downloaded_instances, directory, expt_name, aut
         c, plan = milp.planner(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
 
         # Plot the routes using plotly interactive GUI
-        draw = Visualization_TOPF(plan, K, T, D, S, T_loc, D_loc, c)
+        draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
         # filename if the plot to be saved
         name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
         # plot and save
-        routes = draw.save_plot_topf(name, auto_open_flag)
+        routes = draw.save_plot_topf_milp(plan, name, auto_open_flag)
         print(routes)
 
         # For data collection, generates .csv file
@@ -252,12 +264,13 @@ def main():
     ###################################################################################################################
 
     '''Experiments: TOPF with randomly generated input '''
-    expt_name = 'topf_experiment_2R'
+    # change the name as per experiment
+    expt_name = 'topf_experiment_5R'
     # Provide basic input for multiple runs
-    robots_range = [2]#,3,4,5,6,7,8,9,10]
+    robots_range = [2]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
     # task_range = [6,7,8]
     # depot_range = [1,2,3]
-    node_range = [4,5,9,10,14,15,19,20,24,25,29,30]
+    node_range = [5, 10, 15, 20, 25, 30]
     L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  #for arena size 100 x 100
     Tmax_range = [400]
     velocity = 1
@@ -265,7 +278,7 @@ def main():
     # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
     multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=1)
 
-    expt_name = 'topf_experiment_2R_with_flow'
+    expt_name = 'topf_experiment_5R_with_flow'
     multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=2)
 
 
@@ -273,14 +286,14 @@ def main():
     ###################################################################################################################
 
     '''Run TOPF with C-mdvrp test instances'''
-    # expt_name = 'topf_cmdvrp23'
+    # expt_name = 'topf_cmdvrp13'
     # # Select which instance set
     # downloaded_instances = 0
     # # Location of the saved instances
     # directory = 'C-mdvrp/'
     # # Read input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
     # run_topf_with_test_instances(downloaded_instances, directory, expt_name, auto_open_flag=0)
-    #
+
 
     ###################################################################################################################
 

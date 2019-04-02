@@ -14,6 +14,9 @@ Problem(Task Planning).Given the starting position of robots and the locations o
 [Install IBM CPLEX Optimization Studio](http://www-01.ibm.com/support/docview.wss?uid=swg27050618)
 (Free for students)
 
+[Install GUROBI](http://www.gurobi.com/documentation/8.1/quickstart_linux.pdf)
+(Free Academic License)
+
 ### Installation & Usage
 Clone/download the repository.
 
@@ -35,3 +38,47 @@ For more info on using CPLEX in MATLAB: [Link](https://www.ibm.com/support/knowl
 
 Create a new project and use the .mod and .dat files in the repository as the OPL Model and Data files, respectively, for the project.
 Add these two files into a 'New Run Configuration' and select 'Run this' from the drop down menu.
+
+
+#### GUROBIPY
+File description:
+- main.py: has separate blocks for running experiments; contains usuage information for other modules
+- environment.py: generates input for planning; parses other input files
+- topf/toptw.py: MILP formulation
+- heuristics.py: planning algorithm
+- visualization.py: graphing using plotly
+- collection.py: data saving
+- analysis.py: inferring the results obtained
+Outputs:
+- .csv: Two types of csv files, (1) One per experiment containing basic input and runtime data and (2) One per cycle containing route information for each robots
+- .html: plotly interactive graph, one per each cycle
+
+### Running experiments on cluster
+WPI turing cluster has already installed gurobi. To use it:
+~~~~
+module load gurobi
+~~~~
+## Submitting jobs
+Login to your account. Create and name the folder as per the intended experiment.
+
+Change the following parameters as per the experiment:
+1. In main.py:
+- Uncomment which block is to be used
+- Give experiment Name
+- Modify other parameters as required in that specific block
+
+2. milp_job.sh:
+- Change MYDIR to the foldername on your "local cluster" environment
+- Verify job commands
+
+Copy all .py files in a folder on your turing account.
+~~~~
+scp <path>/<to>/<localfiles>/*.py wpicluster:~/<path>/<to>/<foldername>/
+~~~~
+
+Submit the job!
+~~~~
+sbatch milp_job.sh
+squeue -u USERNAME
+~~~~
+The output files would be found in the wpiclusterpath/<foldername>/data/.

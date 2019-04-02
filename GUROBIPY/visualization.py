@@ -16,55 +16,60 @@ import matplotlib.animation as animation
 
 '''Visualization for TOPF'''
 class Visualization_TOPF:
-    def __init__(self, model, K, T, D, S, T_loc, D_loc, c):
-        self.v = model.getVars()
+    def __init__(self, K, T, D, S, T_loc, D_loc, c):
         self.K = K
         self.T = T
         self.D = D
         self.S = S
-        N = self.T + self.D
+        self.N = self.T + self.D
         self.T_loc = T_loc
         self.D_loc = D_loc
         self.c = c
-        self.arcsInOrder = {k: [] for k in K}
-        self.finalArcs = {k: [] for k in K}
-        self.finalArcsWeighted = {k: [] for k in K}
-        self.remainingFuel = {t: 0 for t in T}
-        for i in range(len(self.v)):
-            if self.v[i].x >= 0.9 and self.v[i].varName[0] == 'x':
-                x, y, k = self.v[i].VarName.split(',')
+        self.arcsInOrder = {k: [] for k in self.K}
+
+    def preprocessing(self, model):
+        v = model.getVars()
+
+        finalArcs = {k: [] for k in self.K}
+        finalArcsWeighted = {k: [] for k in self.K}
+        remainingFuel = {t: 0 for t in self.T}
+        for i in range(len(v)):
+            if v[i].x >= 0.9 and v[i].varName[0] == 'x':
+                x, y, k = v[i].VarName.split(',')
                 x = x.replace("x[", "")
                 k = k.replace("]", "")
-                self.finalArcs[k].append((x, y))
-                self.finalArcsWeighted[k].append((x, y, self.c[x, y]))
-            if self.v[i].x >= 0.9 and self.v[i].varName[0] == 'r':
-                x, y = self.v[i].VarName.split('[')
+                finalArcs[k].append((x, y))
+                finalArcsWeighted[k].append((x, y, self.c[x, y]))
+            if v[i].x >= 0.9 and v[i].varName[0] == 'r':
+                x, y = v[i].VarName.split('[')
                 y = y.replace("]", "")
-                self.remainingFuel[y] = self.v[i].x
+                remainingFuel[y] = v[i].x
 
         # Create a graph for each robot
-        G = {k: nx.DiGraph() for k in K}
+        G = {k: nx.DiGraph() for k in self.K}
         # Add all nodes in the graph for each robot
-        for k in K:
-            G[k].add_nodes_from(N)
-            G[k].add_weighted_edges_from(self.finalArcsWeighted[k])
+        for k in self.K:
+            G[k].add_nodes_from(self.N)
+            G[k].add_weighted_edges_from(finalArcsWeighted[k])
             # print("Nodes in G["+k+"]: ", G[k].nodes(data=True))
             # print("Edges in G["+k+"]: ", G[k].edges(data=True))
 
         # Now compute the paths in the above graphs
-        for k in K:
+        for k in self.K:
             self.arcsInOrder[k] = list(nx.edge_dfs(G[k], source=self.S[0]))
         pprint.pprint(self.arcsInOrder)
 
         # Also compute the length of the path
-        l = {k: 0 for k in K}
-        for k in K:
+        l = {k: 0 for k in self.K}
+        for k in self.K:
             for arc in self.arcsInOrder[k]:
                 l[k] += self.c[arc]
             print("Length [%s] = %.2f" % (k, l[k]))
 
+        return remainingFuel
 
-    def taskNodesTrace(self):
+
+    def taskNodesTrace(self, remainingFuel):
         taskTrace = go.Scatter(
             text=[],
             hovertext=[],
@@ -87,7 +92,7 @@ class Visualization_TOPF:
 
         for t in self.T_loc:
             x, y = self.T_loc.get(t)
-            disp_text = 'NodeID: ' + t + '<br>f_left: ' + "{0:.2f}".format(self.remainingFuel[t])
+            disp_text = 'NodeID: ' + t + '<br>f_left: ' + "{0:.2f}".format(remainingFuel[t])
             taskTrace['x'] += tuple([x])
             taskTrace['y'] += tuple([y])
             taskTrace['text'] += tuple([t])
@@ -172,8 +177,8 @@ class Visualization_TOPF:
                 ["Weight: " + "{0:.2f}".format(np.linalg.norm(np.array([x0, y0]) - np.array([x1, y1])))])
         return edge_trace, node_info_trace
 
-    def drawArena(self, isEdge=1):
-        task_trace = self.taskNodesTrace()
+    def drawArena(self,remainingFuel, isEdge=1):
+        task_trace = self.taskNodesTrace(remainingFuel)
         start_trace = self.startNodesTrace(self.D_loc)
         # end_trace = endNodesTrace(E_loc)
 
@@ -210,13 +215,21 @@ class Visualization_TOPF:
         fig = go.Figure(data=data, layout=layout)
         return fig
 
-    def plot_topf(self):
-        fig = self.drawArena(1)
-        #py.iplot(fig)
-        py.plot(fig)
+    def save_plot_topf_milp(self, model, name, auto_open_flag=0):
+        remainingFuel = self.preprocessing(model)
 
-    def save_plot_topf(self, name, auto_open_flag):
+        fig = self.drawArena(remainingFuel, 1)
+        py.plot(fig, filename=name + '.html', auto_open=auto_open_flag, include_plotlyjs='cdn')
 
+        with open(name + '.csv', 'w') as csv_file:
+            writer = csv.writer(csv_file)
+            for key, value in self.arcsInOrder.items():
+                writer.writerow([key, value])
+
+        return self.arcsInOrder
+
+    def save_plot_topf_heuristic(self, arcsInOrder, name, auto_open_flag):
+        self.arcsInOrder = arcsInOrder
         fig = self.drawArena(1)
         py.plot(fig, filename=name+ '.html', auto_open=auto_open_flag, include_plotlyjs='cdn')
 
@@ -225,7 +238,7 @@ class Visualization_TOPF:
             for key, value in self.arcsInOrder.items():
                 writer.writerow([key, value])
 
-        return self.arcsInOrder
+
 
 
 '''Visualization for TOPTW'''

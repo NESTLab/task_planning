@@ -313,12 +313,12 @@ def main():
     c, plan = milp.planner(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
 
     # Plot the routes using plotly interactive GUI
-    draw = Visualization_TOPF(plan, K, T, D, S, T_loc, D_loc, c)
+    draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
     # filename if the plot to be saved
     name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots) + '.html'
     # plot and save
     auto_open_flag = 1
-    draw.save_plot_topf(name, auto_open_flag)
+    draw.save_plot_topf_milp(plan, name, auto_open_flag)
 
 
 

@@ -43,10 +43,10 @@ def generate_input_combinations(robots_range, node_range, L_range, Tmax_range):
     input_data = np.array(input_data)
     #print(input_data)
 
-    unique = np.unique(input_data, axis=0)
-    #print(unique)
+    # unique_input_data = np.unique(input_data, axis=0)
+    # print(unique_input_data)
 
-    return unique
+    return input_data
 
 
 
@@ -125,9 +125,6 @@ def get_input_data_topf(filename):
         #print(separate)
         L = separate[1]
 
-        # Add T_max
-        # TODO: discuss generation of T_max
-        T_max = 2*L
 
         # Leave out not-applicable info
         for i in range(1,noOfDepots):
@@ -142,8 +139,8 @@ def get_input_data_topf(filename):
             coordinates = task_lines.split(" ")
             while ("" in coordinates):
                 coordinates.remove("")
-            #print(coordinates)
             coordinates = list(map(int, coordinates))
+            #print(coordinates)
             T_loc[T[i]] = coordinates[1:3]
 
         # Parsing x,y coordinates of depots
@@ -153,8 +150,8 @@ def get_input_data_topf(filename):
             coordinates = depot_lines.split(" ")
             while ("" in coordinates):
                 coordinates.remove("")
-            #print(coordinates)
             coordinates = list(map(int, coordinates))
+            #print(coordinates)
             D_loc[D[i]] = coordinates[1:3]
 
     else:
@@ -163,6 +160,10 @@ def get_input_data_topf(filename):
         return
 
     N_loc = {**T_loc, **D_loc}
+
+    # Add T_max
+    # TODO: T_max = constant
+    T_max = 1000
 
     return noOfRobots, noOfTasks, noOfDepots, L, T_max, K, T, D, S, T_loc, D_loc, N_loc
 
@@ -230,20 +231,23 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
 def main():
 
     '''Test the feasibility of C-mdvrp instances'''
-    # directory = 'C-mdvrp/'
+    directory = 'C-mdvrp/'
     # for filename in os.listdir(directory):
     #     print("===========================================================")
     #     print(filename)
     #     noOfRobots, noOfTasks, noOfDepots, L, T_max, K, T, D, S, T_loc, D_loc, N_loc = get_input_data_topf(directory + filename)
     #     print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
-
+    filename = 'p12'
+    noOfRobots, noOfTasks, noOfDepots, L, T_max, K, T, D, S, T_loc, D_loc, N_loc = get_input_data_topf(
+        directory + filename)
+    print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
 
     '''Test input combinations'''
-    robots_range = [2]# 3, 4, 5, 6, 7, 8, 9, 10]
-    node_range = [4, 5, 9, 10, 14, 15, 19, 20, 24, 25, 29, 30]
-    L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  # for arena size 100 x 100
-    Tmax_range = [400]
-    print(generate_input_combinations(robots_range, node_range, L_range, Tmax_range))
+    # robots_range = [2]# 3, 4, 5, 6, 7, 8, 9, 10]
+    # node_range = [4, 5, 9, 10, 14, 15, 19, 20, 24, 25, 29, 30]
+    # L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  # for arena size 100 x 100
+    # Tmax_range = [400]
+    # print(generate_input_combinations(robots_range, node_range, L_range, Tmax_range))
 
 
 if __name__ == "__main__":
