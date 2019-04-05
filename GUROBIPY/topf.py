@@ -315,7 +315,7 @@ def main():
     # Plot the routes using plotly interactive GUI
     draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
     # filename if the plot to be saved
-    name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots) + '.html'
+    name = 'plot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
     # plot and save
     auto_open_flag = 1
     draw.save_plot_topf_milp(plan, name, auto_open_flag)

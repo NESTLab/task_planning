@@ -26,8 +26,8 @@ from gurobipy import *
 # Importing required project modules
 import environment as env
 import topf
-#import toptw
-from visualization import Visualization_TOPF
+import toptw
+from visualization import Visualization_TOPF, Visualization_TOPTW
 from collection import save_topf_data, save_toptw_data, save_topf_data_heuristic
 from heuristics import Heuristics_TOPF
 
@@ -129,7 +129,7 @@ def multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, v
 
                 # For data collection, generates .csv file
                 save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name)
-
+                break
 
 
 
@@ -160,7 +160,7 @@ def run_topf_with_test_instances(downloaded_instances, directory, expt_name, aut
         # Object of the planner
         milp = topf.TOPF(velocity)
         # Optimize model
-        c, plan = milp.planner(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
+        c, plan = milp.planner_with_flow(K, T, D, S, N_loc, noOfRobots, noOfTasks, L, T_max)
 
         # Plot the routes using plotly interactive GUI
         draw = Visualization_TOPF(K, T, D, S, T_loc, D_loc, c)
@@ -207,6 +207,30 @@ def multi_run_heuristics( robots_range, node_range, L_range, Tmax_range, velocit
         print("===========================================================")
         print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
 
+        if (noOfRobots == 2 and noOfTasks == 4 and noOfDepots == 1):
+            print("Skipped")
+            continue
+        if (noOfRobots == 2 and noOfTasks == 8 and noOfDepots == 2 and L < 200):
+            print("Skipped")
+            continue
+        if (noOfRobots == 2 and noOfTasks == 8 and noOfDepots == 7 and L < 200):
+            print("Skipped")
+            continue
+
+        if(noOfRobots==3 and noOfTasks == 4 and noOfDepots==1 ):
+            print("Skipped")
+            continue
+
+        if (noOfRobots == 3 and noOfTasks == 9 and noOfDepots == 1 and L > 200):
+            print("Skipped")
+            continue
+        if (noOfRobots == 3 and noOfTasks == 8 and noOfDepots == 7 and L > 200):
+            print("Skipped")
+            continue
+        if (noOfRobots == 3 and noOfTasks == 12 and noOfDepots == 3 and L < 200):
+            print("Skipped")
+            continue
+
         # randomly generated locations of tasks and robots
         K, T, D, S, T_loc, D_loc, N_loc = env.generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots)
 
@@ -244,14 +268,20 @@ def single_run_toptw_random_input(noOfWorkerRobots, noOfTasks, noOfStartNodes, m
     :return: Nothing, just plots (.html) the interactive route for each robot
     '''
     # randomly generated locations of tasks and robots
-    W, S, T, E, N_loc, Q, O, C, D = env.generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes,
-                                                             maxTaskDuration, T_max, maxTimeInterval)
+    W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D = env.generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes,
+                                                                            maxTaskDuration, T_max, maxTimeInterval)
     # Object of the planner
     milp = toptw.TOPTW(velocity)
     # Optimize!!!
-    plan = milp.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max)
+    c, plan = milp.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max)
 
-
+    # Plot the routes using plotly interactive GUI
+    draw = Visualization_TOPTW(plan, W, T, D, S, E, S_loc, E_loc, T_loc, c)
+    # filename if the plot to be saved
+    name = 'plot' + str(noOfWorkerRobots) + '_' + str(noOfTasks)
+    # plot and save
+    auto_open_flag = 1
+    draw.save_plot_toptw(plan, name, auto_open_flag)
 
 
 def multi_run_toptw_random_input(robots_range, task_range, Tmax_range, velocity, expt_name, noOfStartNodes, maxTaskDuration, maxTimeInterval):
@@ -269,32 +299,46 @@ def multi_run_toptw_random_input(robots_range, task_range, Tmax_range, velocity,
 
         print("===========================================================")
         print(noOfWorkerRobots, noOfTasks, T_max)
-
+        retry_count = 0
+        rerun_count = 1
         # to re-run the randomly generated input if the model turns out to be infeasible
         while(True):
 
             # randomly generated locations of tasks and robots
-            W, S, T, E, N_loc, Q, O, C, D = env.generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, T_max, maxTimeInterval)
-
+            W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D = env.generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, T_max,maxTimeInterval)
             # Object of the planner
-            milp=toptw.TOPTW(velocity)
+            milp = toptw.TOPTW(velocity)
             # Optimize!!!
-            plan = milp.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max)
+            c, plan = milp.planner(W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max)
+
             # Actual runtime
             # get out of the loop if runtime (model) is feasible
             #runtime = plan.Runtime
 
-            if(plan.status == GRB.Status.INF_OR_UNBD or plan.status == GRB.Status.INFEASIBLE\
+            if (plan.status == GRB.Status.INF_OR_UNBD or plan.status == GRB.Status.INFEASIBLE \
                     or plan.status == GRB.Status.UNBOUNDED):
-                continue
-            elif(plan.status == GRB.Status.OPTIMAL):
-                break
+                if (retry_count < 15):
+                    retry_count = retry_count + 1
+                    continue
+                else:
+                    break
+            elif (plan.status == GRB.Status.OPTIMAL):
+                # Plot the routes using plotly interactive GUI
+                draw = Visualization_TOPTW(plan, W, T, D, S, E, S_loc, E_loc, T_loc, c)
+                # filename if the plot to be saved
+                name = 'plot' + str(noOfWorkerRobots) + '_' + str(noOfTasks)
 
+                # plot and save
+                routes = draw.save_plot_toptw(plan, name, auto_open_flag=0)
+                print(routes)
 
-
-        # For data collection, generates .csv file
-        save_toptw_data(plan, noOfWorkerRobots, noOfTasks, T_max, expt_name)
-
+                # For data collection, generates .csv file
+                save_toptw_data(plan, noOfWorkerRobots, noOfTasks, T_max, expt_name)
+                rerun_count = rerun_count + 1
+                if(rerun_count > 5):
+                    break
+                else:
+                    continue
 
 
 
@@ -320,20 +364,20 @@ def main():
 
     '''Experiments: TOPF MILP with randomly generated input '''
     # # change the name as per experiment
-    # expt_name = 'topf_experiment_5R'
+    # # expt_name = 'topf_experiment_3R'
     # # Provide basic input for multiple runs
-    # robots_range = [2]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # robots_range = [3]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
     # # task_range = [6,7,8]
     # # depot_range = [1,2,3]
-    # node_range = [5, 10, 15, 20, 25, 30]
+    # node_range = [5, 10, 15]#, 20, 25, 30]
     # L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  #for arena size 100 x 100
     # Tmax_range = [400]
     # velocity = 1
     #
-    # # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
-    # multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=1)
+    # # # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
+    # # multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=1)
     #
-    # expt_name = 'topf_experiment_5R_with_flow'
+    # expt_name = 'topf_experiment_3R_with_flow'
     # multi_run_topf_random_input(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, planner_flag=2)
 
 
@@ -341,7 +385,7 @@ def main():
     ###################################################################################################################
 
     '''Run TOPF MILP with C-mdvrp test instances'''
-    # expt_name = 'topf_cmdvrp13'
+    # expt_name = 'topf_cmdvrp4'
     # # Select which instance set
     # downloaded_instances = 0
     # # Location of the saved instances
@@ -375,20 +419,20 @@ def main():
 
     ###################################################################################################################
 
-    '''Experiments: TOPF heuristic with randomly generated input '''
-    # change the name as per experiment
-    expt_name = 'topf_experiment_2RH'
-    # Provide basic input for multiple runs
-    robots_range = [2]  # [2, 3, 4, 5, 6, 7, 8, 9, 10]
-    # task_range = [6,7,8]
-    # depot_range = [1,2,3]
-    node_range = [5, 10, 15, 20, 25, 30]
-    L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  # for arena size 100 x 100
-    Tmax_range = [400]
-    velocity = 1
-
-    # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
-    multi_run_heuristics(robots_range, node_range, L_range, Tmax_range, velocity, expt_name)
+    # '''Experiments: TOPF heuristic with randomly generated input '''
+    # # change the name as per experiment
+    # expt_name = 'topf_experiment_2RH'
+    # # Provide basic input for multiple runs
+    # robots_range = [2]  # [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # # task_range = [6,7,8]
+    # # depot_range = [1,2,3]
+    # node_range = [5, 10, 15]#, 20, 25, 30]
+    # L_range = [100 * np.sqrt(2), 100 * 2 * np.sqrt(2)]  # for arena size 100 x 100
+    # Tmax_range = [400]
+    # velocity = 1
+    #
+    # # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
+    # multi_run_heuristics(robots_range, node_range, L_range, Tmax_range, velocity, expt_name)
 
 
     ###################################################################################################################
@@ -410,24 +454,24 @@ def main():
     # maxTaskDuration = 10
     # velocity = 1
     # T_max = 1000
-    # # Read input -> Plan -> Save computational data (.csv)
+    # # Read input -> Plan -> Save computational data (.csv) -> Plot(.html)
     # single_run_toptw_random_input(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, T_max, maxTimeInterval, velocity)
 
     ###################################################################################################################
 
     '''Experiments: TOPTW with randomly generated input '''
-    # expt_name = 'toptw_experiment1'
-    # # Provide basic input for multiple runs
-    # robots_range = [2]
-    # task_range = [8]
-    # Tmax_range = [1000]
-    # noOfStartNodes = 1
-    # maxTimeInterval = 50
-    # maxStartTime = 400 - maxTimeInterval
-    # maxTaskDuration = 10
-    # velocity = 1
-    # # Generate input -> Plan -> Save computational data (.csv)
-    # multi_run_toptw_random_input(robots_range, task_range, Tmax_range, velocity, expt_name, noOfStartNodes, maxTaskDuration, maxTimeInterval)
+    expt_name = 'toptw_experiment_large'
+    # Provide basic input for multiple runs
+    robots_range = [2, 3, 4, 5, 8, 10, 20]
+    task_range = [5, 10, 15, 20, 25, 30, 40, 50, 80, 100]
+    Tmax_range = [5000]
+    noOfStartNodes = 1
+    maxTimeInterval = 50
+    maxStartTime = 400 - maxTimeInterval
+    maxTaskDuration = 10
+    velocity = 1
+    # Generate input -> Plan -> Save computational data (.csv) -> Plot(.html)
+    multi_run_toptw_random_input(robots_range, task_range, Tmax_range, velocity, expt_name, noOfStartNodes, maxTaskDuration, maxTimeInterval)
 
     ###################################################################################################################
 

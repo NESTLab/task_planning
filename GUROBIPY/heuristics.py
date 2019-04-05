@@ -74,7 +74,7 @@ class Heuristics_TOPF:
             elif arc[0] in self.D and arc[1] in self.D and arc[0] == arc[1]:
                 fuelForArc = 0
             else:
-                print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
+                #print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
                 raise ValueError("fuelCheck() is behaving strangely for this arc.")
             if fuelConsumed + fuelForArc <= maxFuel:
                 fuelConsumed += fuelForArc
@@ -99,7 +99,7 @@ class Heuristics_TOPF:
             elif arc[0] in self.D and arc[1] in self.D and arc[0] == arc[1]:
                 timeForArc = 0
             else:
-                print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
+                #print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
                 raise ValueError("fuelCheck() is behaving strangely for this arc.")
             if timeSpent + timeForArc <= maxTime:
                 timeSpent += timeForArc
@@ -158,11 +158,11 @@ class Heuristics_TOPF:
                 if bool_c:
                     self.arcsInOrderHeuristic[k] = newPath
                     fuelConsumedHeuristic[k] = self.pathLength(newPath)
-                    pprint.pprint(self.arcsInOrderHeuristic)
-                    pprint.pprint(fuelConsumedHeuristic)
+                    #pprint.pprint(self.arcsInOrderHeuristic)
+                    #pprint.pprint(fuelConsumedHeuristic)
                     tasksAssigned.append(t)
                     T_Heuristic.remove(t)
-                    print(T_Heuristic)
+                    #print(T_Heuristic)
         # Algorithm 4
         # -----------
         # Add Depots in paths
@@ -214,7 +214,7 @@ class Heuristics_TOPF:
             elif arc[0] in self.D and arc[1] in self.D and arc[0] == arc[1]:
                 l += 0
             else:
-                print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
+                #print("Curr arc under process (%s, %s)" % (arc[0], arc[1]))
                 raise ValueError(
                     "pathLength() is behaving strangely for this arc.")
         return l
@@ -234,7 +234,7 @@ class Heuristics_TOPF:
         _, fuelConsumedBefore2Opt = self.fuelCheck(perm, self.L)
         _, timeSpentBefore2Opt = self.timeCheck(perm, self.T_max)
         if len(perm) <= 3:
-            print('No 2opt move possible with only %d nodes' % len(perm))
+            #print('No 2opt move possible with only %d nodes' % len(perm))
             return perm
         while maxIter > 0:
 
@@ -274,10 +274,10 @@ class Heuristics_TOPF:
 
             # now reverse the tour segment between p1 and p2
             result[p1:p2] = reversed(result[p1:p2])
-            print("Iteration: " + str(maxIter))
-            print("2-Opt move attempted with edge (%s, %s) and (%s, %s)"
-                  % (perm[p1], perm[p1 + 1], perm[p2 - 1], perm[p2]))
-            print("New attempted path is :" + str(result))
+            #print("Iteration: " + str(maxIter))
+            #print("2-Opt move attempted with edge (%s, %s) and (%s, %s)"
+                  # % (perm[p1], perm[p1 + 1], perm[p2 - 1], perm[p2]))
+            #print("New attempted path is :" + str(result))
 
             # Check if the path is fuel and time feasible
             fuelCheckPassed, fuelConsumedAfter2Opt = self.fuelCheck(result, self.L)
@@ -287,19 +287,19 @@ class Heuristics_TOPF:
                 # Check if the current time and fuel is less than previous ones
                 if timeSpentAfter2Opt < timeSpentBefore2Opt:
                     # This is a valid 2opt
-                    print("2-Opt move successful with edge (%s, %s) and (%s, %s)"
-                          % (perm[p1], perm[p1 + 1], perm[p2 - 1], perm[p2]))
-                    print("Previous Path: (Time Cost: %.2f)" %
-                          timeSpentBefore2Opt)
-                    pprint.pprint(perm)
-                    print("New Path: (Time Cost: %.2f)" %
-                          timeSpentAfter2Opt)
-                    pprint.pprint(result)
+                    #print("2-Opt move successful with edge (%s, %s) and (%s, %s)"
+                          # % (perm[p1], perm[p1 + 1], perm[p2 - 1], perm[p2]))
+                    #print("Previous Path: (Time Cost: %.2f)" %
+                          # timeSpentBefore2Opt)
+                    #pprint.pprint(perm)
+                    #print("New Path: (Time Cost: %.2f)" %
+                          # timeSpentAfter2Opt)
+                    #pprint.pprint(result)
                     return result
 
             maxIter -= 1
-        print("No 2-Opt move feasible")
-        pprint.pprint(perm)
+        #print("No 2-Opt move feasible")
+        #pprint.pprint(perm)
         return perm
 
 
@@ -378,19 +378,17 @@ class Heuristics_TOPF:
             _, timeSpentBeforeSwap2 = self.timeCheck(tour[bK], self.T_max)
             fuelConsumedBeforeSwap = fuelConsumedBeforeSwap1 + fuelConsumedBeforeSwap2
             timeSpentBeforeSwap = timeSpentBeforeSwap1 + timeSpentBeforeSwap2
-            print("Iteration: " + str(maxIter))
+            #print("Iteration: " + str(maxIter))
             # Pick two nodes randomly from each path, other than start nodes
             if timeSpentBeforeSwap1 > 0:
                 node1, n1Idx = self.pickRandomNode(tour[aK])
             else:
-                print("No Swap possible between paths of robots %s and %s."
-                      % (aK, bK))
+                #print("No Swap possible between paths of robots %s and %s." % (aK, bK))
                 continue
             if timeSpentBeforeSwap2 > 0:
                 node2, n2Idx = self.pickRandomNode(tour[bK])
             else:
-                print("No Swap possible between paths of robots %s and %s."
-                      % (aK, bK))
+                #print("No Swap possible between paths of robots %s and %s." % (aK, bK))
                 continue
 
             # Try swapping them in their paths
@@ -416,21 +414,21 @@ class Heuristics_TOPF:
                         # This is a valid swap
                         # print("Swap Done Between %s of path for robot %s and %s of path for robot %s "
                         #                  % (node1, aK, node2, bK))
-                        print("Previous Tour: (Time Cost: %.2f)" %
-                              timeSpentBeforeSwap)
+                        #print("Previous Tour: (Time Cost: %.2f)" %
+                              #timeSpentBeforeSwap)
                         # pprint.pprint(prevTour)
                         tour[aK] = newaK[:]
                         tour[bK] = newbK[:]
-                        print("New Tour: (Time Cost: %.2f)" %
-                              timeSpentAfterSwap)
+                        #print("New Tour: (Time Cost: %.2f)" %
+                              #timeSpentAfterSwap)
                         # pprint.pprint(tour)
                         return tour
             maxIter -= 1
-        print("No swap executed:")
-        print("Previous Tour:")
-        pprint.pprint(prevTour)
-        print("NewTour:")
-        pprint.pprint(tour)
+        #print("No swap executed:")
+        #print("Previous Tour:")
+        #pprint.pprint(prevTour)
+        #print("NewTour:")
+        #pprint.pprint(tour)
         return tour
 
 
@@ -471,12 +469,12 @@ class Heuristics_TOPF:
                                 modifiedTour = copy.deepcopy(tempTour)
                                 # print("Node %s of path for robot %s moved to path of robot %s "
                                 #        get_ipython().run_line_magic('(node,', 'k, k2))')
-                                print("Previous Tour: (Time Cost: %.2f)" %
-                                      totalTimeBeforeMove)
-                                pprint.pprint(tour)
-                                print("New Tour: (Time Cost: %.2f)" %
-                                      totalTimeAfterMove)
-                                pprint.pprint(modifiedTour)
+                                # print("Previous Tour: (Time Cost: %.2f)" %
+                                #       totalTimeBeforeMove)
+                                #pprint.pprint(tour)
+                                # print("New Tour: (Time Cost: %.2f)" %
+                                #       totalTimeAfterMove)
+                                #pprint.pprint(modifiedTour)
                                 break
         return modifiedTour
 
@@ -495,7 +493,7 @@ class Heuristics_TOPF:
                     timeCheckPassed, _ = self.timeCheck(tempPath, self.T_max)
                     if fuelCheckPassed and timeCheckPassed:
                         modfiedTour[k].remove(node)
-                        print('Depot %s removed from path of robot %s' % (node, k))
+                        #print('Depot %s removed from path of robot %s' % (node, k))
         return modfiedTour
 
 
@@ -527,7 +525,7 @@ class Heuristics_TOPF:
                     taskIndiciesInCurrPath.append(idx)
             # Now, remove rho*A percent depots from current path
             noOfDepotsToBeRemoved = math.ceil(0.3 * rho * A * len(depotIndiciesInCurrPath))
-            print("%d depot(s) to be removed from path %s" % (noOfDepotsToBeRemoved, k))
+            #print("%d depot(s) to be removed from path %s" % (noOfDepotsToBeRemoved, k))
             depotsInPath = [
                 n for n in modifiedTour[k] if n in self.D and n != self.S[0]]
             if depotsInPath:
@@ -536,14 +534,14 @@ class Heuristics_TOPF:
                     randomDepot = tour[k][randomDepotIdx]
                     modifiedTour[k].remove(randomDepot)
                     depotIndiciesInCurrPath.remove(randomDepotIdx)
-                    print("Depot %s removed from path of %s"
-                          % (randomDepot, k))
+                    # print("Depot %s removed from path of %s"
+                    #       % (randomDepot, k))
             else:
-                print("No Depot in path %s to remove." % k)
-                # continue
+                #print("No Depot in path %s to remove." % k)
+                continue
             # Remove (1-rho)*A percent tasks from the current path
             noOfTasksToBeRemoved = math.ceil(0.3 * (1 - rho) * A * len(taskIndiciesInCurrPath))
-            print("%d tasks to be removed from path %s" % (noOfTasksToBeRemoved, k))
+            #print("%d tasks to be removed from path %s" % (noOfTasksToBeRemoved, k))
             tasksInPath = [
                 n for n in modifiedTour[k] if n in self.T and n != self.S[0]]
             if tasksInPath:
@@ -552,11 +550,11 @@ class Heuristics_TOPF:
                     randomTask = tour[k][randomTaskIdx]
                     modifiedTour[k].remove(randomTask)
                     taskIndiciesInCurrPath.remove(randomTaskIdx)
-                    print("Task %s removed from path of %s"
-                          % (randomTask, k))
+                    # print("Task %s removed from path of %s"
+                    #       % (randomTask, k))
             else:
-                print("No Task in path %s to remove." % k)
-                # continue
+                #print("No Task in path %s to remove." % k)
+                continue
 
         return modifiedTour
 
@@ -592,7 +590,7 @@ class Heuristics_TOPF:
         thisSeed = rnd.randrange(sys.maxsize)
         rng = rnd.Random(thisSeed)
         rnd.seed(thisSeed)
-        print("Random Seed:", thisSeed)
+        #print("Random Seed:", thisSeed)
 
         # Dict for holding the cnadidate solution
         candidateSolution = {}
@@ -643,8 +641,8 @@ class Heuristics_TOPF:
         # Local Search Ended -----------------------------------------------------
 
         while noImprovementIterations < 10:
-            print("No Improvement Itertion %d." % noImprovementIterations)
-            print("Random Seed:", thisSeed)
+            #print("No Improvement Itertion %d." % noImprovementIterations)
+            #print("Random Seed:", thisSeed)
 
             # Perturb
             candidateSolution = self.perturb(candidateSolution, diversificationParam)
@@ -713,8 +711,8 @@ class Heuristics_TOPF:
             if diversificationParam > smallestNoOfNodes:
                 diversificationParam = diversificationParam - smallestNoOfNodes
 
-        print('Best Solution:')
-        pprint.pprint(bestSolution)
+        #print('Best Solution:')
+        #pprint.pprint(bestSolution)
         cost = self.tourCost(bestSolution)
         return bestSolution, self.c, thisSeed, cost
 

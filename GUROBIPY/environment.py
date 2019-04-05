@@ -163,7 +163,7 @@ def get_input_data_topf(filename):
 
     # Add T_max
     # TODO: T_max = constant
-    T_max = 1000
+    T_max = 10000
 
     return noOfRobots, noOfTasks, noOfDepots, L, T_max, K, T, D, S, T_loc, D_loc, N_loc
 
@@ -223,7 +223,7 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
 
     N_loc = {**S_loc, **T_loc, **E_loc}
 
-    return W, S, T, E, N_loc, Q, O, C, D
+    return W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D
 
 
 

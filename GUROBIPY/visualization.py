@@ -252,6 +252,219 @@ class Visualization_TOPF:
 
 
 class Visualization_TOPTW:
-    def __init__(self, model):
+    def __init__(self, model, W, T, D, S, E, S_loc, E_loc, T_loc, c):
+        self.W = W
+        self.T = T
+        self.D = D
+        self.S = S
+        N = S + T + E
+        self.S_loc = S_loc
+        self.E_loc = E_loc
+        self.T_loc = T_loc
+        self.c = c
 
         self.v = model.getVars()
+
+        self.finalArcs = {w: [] for w in self.W}
+        self.arrivalTimes = {}
+        for i in range(len(self.v)):
+            if self.v[i].x >= 0.9 and self.v[i].varName[0] == 'x':
+                # print(self.v[i].varName, self.v[i].x)
+                w, x, y = self.v[i].VarName.split(',')
+                w = w.replace("x[", "")
+                x = x.replace("(", "")
+                x = x.replace("'", "")
+                y = y.replace(" ", "")
+                y = y.replace(")]", "")
+                y = y.replace("'", "")
+                self.finalArcs[w].append((x, y))
+                if y != 'E':
+                    self.arrivalTimes[w, y] = []
+        # pprint.pprint(finalArcs)
+        # pprint.pprint(arrivalTimes)
+
+        # Now, lets arrange them in the form of tour
+        self.arcsInOrder = {w: [] for w in W}
+        for w in W:
+            self.arcsInOrder[w].append(self.finalArcs[w][0])
+            for i in range(len(self.finalArcs[w]) - 1):
+                # Find the arc that's next to this arc
+                for x in self.finalArcs[w]:
+                    if x[0] == self.arcsInOrder[w][-1][1]:
+                        reqArc = x
+                self.arcsInOrder[w].append(reqArc)
+        # pprint.pprint(arcsInOrder)
+
+        self.taskIncomingRobots = {n: [] for n in N}
+        self.taskOutgoingRobots = {n: [] for n in N}
+        for w in W:
+            for arc in self.arcsInOrder[w]:
+                self.taskIncomingRobots[arc[1]].append(w)
+                self.taskOutgoingRobots[arc[0]].append(w)
+        # print("TaskIncomingRobots: ")
+        # pprint.pprint(taskIncomingRobots)
+        # print("TaskOutgoingRobots: ")
+        # pprint.pprint(taskOutgoingRobots)
+
+        # Also compute the arrival times at each node
+        # TODO
+        # for w in self.W:
+        #     for arc in self.arcsInOrder[w]:
+        #         if arc[1] != 'E':
+        #             # arrivalTimes[w,arc[1]].append(s[w, arc[1]].x)
+        #             self.arrivalTimes[w, arc[1]] = self.s[w, arc[1]].x
+        # # pprint.pprint(self.arrivalTimes)
+
+    def taskNodesTrace(self):
+        taskTrace = go.Scatter(
+            text=[],
+            x=[],
+            y=[],
+            mode='markers',
+            # hoverinfo='text',
+            name='Task Locations',
+            marker=dict(
+                size=6,
+                color='blue',
+                line=dict(
+                    # color='rgba(217, 217, 217, 0.14)',
+                    width=0.5
+                ),
+                opacity=0.8
+            )
+        )
+
+        for t in self.T_loc:
+            x, y = self.T_loc.get(t)
+            disp_text = 'NodeID: ' + t  # + '<br>f_left: ' + "{0:.2f}".format(f_left)
+            taskTrace['x'] += tuple([x])
+            taskTrace['y'] += tuple([y])
+            taskTrace['text'] += tuple([disp_text])
+        return taskTrace
+
+    def startNodesTrace(self):
+        startTrace = go.Scatter(
+            text=[],
+            x=[],
+            y=[],
+            mode='markers',
+            # hoverinfo='text',
+            name='Start Locations',
+            marker=dict(
+                size=12,
+                color='green',
+                line=dict(
+                    # color='rgba(217, 217, 217, 0.14)',
+                    width=0.5
+                ),
+                opacity=0.8
+            )
+        )
+
+        for s in self.S_loc:
+            x, y = self.S_loc.get(s)
+            disp_text = 'NodeID: ' + s  # + '<br>f_left: ' + "{0:.2f}".format(f_left)
+            startTrace['x'] += tuple([x])
+            startTrace['y'] += tuple([y])
+            startTrace['text'] += tuple([disp_text])
+        return startTrace
+
+    def endNodesTrace(self):
+        endTrace = go.Scatter(
+            text=[],
+            x=[],
+            y=[],
+            mode='markers',
+            # hoverinfo='text',
+            name='End Locations',
+            marker=dict(
+                size=12,
+                color='red',
+                line=dict(
+                    # color='rgba(217, 217, 217, 0.14)',
+                    width=0.5
+                ),
+                opacity=0.8
+            )
+        )
+
+        for e in self.E_loc:
+            x, y = self.E_loc.get(e)
+            disp_text = 'NodeID: ' + e  # + '<br>f_left: ' + "{0:.2f}".format(f_left)
+            endTrace['x'] += tuple([x])
+            endTrace['y'] += tuple([y])
+            endTrace['text'] += tuple([disp_text])
+        return endTrace
+
+    def edgeTrace(self, arcsInOrder):
+        colors = ['rgb(31, 119, 180)', 'rgb(255, 127, 14)',
+                  'rgb(44, 160, 44)', 'rgb(214, 39, 40)',
+                  'rgb(148, 103, 189)', 'rgb(140, 86, 75)',
+                  'rgb(227, 119, 194)', 'rgb(127, 127, 127)',
+                  'rgb(188, 189, 34)', 'rgb(23, 190, 207)']
+        N_loc = {**self.S_loc, **self.T_loc, **self.E_loc}
+        edge_trace = go.Scatter(
+            x=[],
+            y=[],
+            text=[],
+            # name=[],
+            line=dict(width=1, color=colors[rnd.randint(0, len(colors) - 1)], dash='dash'),
+            hoverinfo='none',
+            showlegend=True,
+            mode='lines')
+        # pprint.pprint(arcsInOrder)
+        for arc in arcsInOrder:
+            x0, y0 = N_loc.get(arc[0])
+            x1, y1 = N_loc.get(arc[1])
+            edge_trace['x'] += tuple([x0, x1])
+            edge_trace['y'] += tuple([y0, y1])
+        return edge_trace
+
+    def drawArena(self, isEdge=1):
+        task_trace = self.taskNodesTrace()
+        start_trace = self.startNodesTrace()
+        end_trace = self.endNodesTrace()
+
+        data = [task_trace, start_trace, end_trace]
+
+        if isEdge:
+            for w in self.arcsInOrder:
+                edge_trace = self.edgeTrace(self.arcsInOrder[w])
+                edge_trace.name = str(w)
+                data.append(edge_trace)
+
+        # if isEdge:
+        #    print(edge_trace['x'][0])
+
+        layout = go.Layout(
+            title='Arena',
+            hovermode='closest',
+            xaxis=dict(
+                title='X-Coord',
+                range=[0, 100]
+                # ticklen= 5,
+                # zeroline= False,
+                # gridwidth= 2,
+            ),
+            yaxis=dict(
+                title='Y-Coord'
+                # ticklen= 5,
+                # gridwidth= 2,
+            ),
+            showlegend=True
+        )
+        fig = go.Figure(data=data, layout=layout)
+        return fig
+
+    def save_plot_toptw(self, model, name, auto_open_flag=0):
+
+        fig = self.drawArena(1)
+        py.plot(fig, filename=name + '.html',
+                auto_open=auto_open_flag, include_plotlyjs='cdn')
+
+        with open(name + '.csv', 'w') as csv_file:
+            writer = csv.writer(csv_file)
+            for key, value in self.arcsInOrder.items():
+                writer.writerow([key, value])
+
+        # TODO save arrival times

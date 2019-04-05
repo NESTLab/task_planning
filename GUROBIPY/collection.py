@@ -34,8 +34,9 @@ def save_topf_data_heuristic(seed,cost, noOfRobots, noOfTasks, noOfDepots, L, T_
 
 def save_toptw_data(plan, noOfWorkerRobots, noOfTasks, T_max, expt_name):
     runtime = plan.Runtime
+    quality = plan.ObjVal
     # Save data
-    row = [noOfWorkerRobots, noOfTasks, T_max, runtime]
+    row = [noOfWorkerRobots, noOfTasks, T_max, runtime, quality]
 
     with open(expt_name+'.csv', 'a') as csvFile:
         writer = csv.writer(csvFile)
