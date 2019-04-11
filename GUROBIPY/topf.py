@@ -348,7 +348,7 @@ class TOPF:
         # Objective function
         gamma = 0.0001
         # rewards
-        objExpr1 = quicksum(R[i]*y[i, k] for i in T for k in K)
+        objExpr1 = quicksum(y[i, k] for i in T for k in K)
         objExpr2 = quicksum(gamma * c[i, j] * x[i, j, k] for k in K for i in N for j in N if i != j)
 
         objFun = objExpr1 - objExpr2

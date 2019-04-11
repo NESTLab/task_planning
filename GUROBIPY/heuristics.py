@@ -25,7 +25,7 @@ from visualization import Visualization_TOPF
 
 
 class Heuristics_TOPF:
-    def __init__(self, K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity):
+    def __init__(self, K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity, seed):
         self.K = K
         self.T = T
         self.D = D
@@ -36,6 +36,7 @@ class Heuristics_TOPF:
         self.L = L
         self.T_max = T_max
         self.vel = velocity
+        self.thisSeed = seed
 
         # Total nodes
         self.N = T + D
@@ -384,11 +385,13 @@ class Heuristics_TOPF:
                 node1, n1Idx = self.pickRandomNode(tour[aK])
             else:
                 #print("No Swap possible between paths of robots %s and %s." % (aK, bK))
+                maxIter -= 1
                 continue
             if timeSpentBeforeSwap2 > 0:
                 node2, n2Idx = self.pickRandomNode(tour[bK])
             else:
                 #print("No Swap possible between paths of robots %s and %s." % (aK, bK))
+                maxIter -= 1
                 continue
 
             # Try swapping them in their paths
@@ -587,10 +590,9 @@ class Heuristics_TOPF:
     # Main loop for Iterated Local Search
 
     def ILS(self):
-        thisSeed = rnd.randrange(sys.maxsize)
-        rng = rnd.Random(thisSeed)
-        rnd.seed(thisSeed)
-        print("Random Seed:", thisSeed)
+        # thisSeed = rnd.randrange(sys.maxsize)
+        rnd.seed(self.thisSeed)
+        print("Random Seed:", self.thisSeed)
 
         # Dict for holding the cnadidate solution
         candidateSolution = {}
@@ -719,7 +721,7 @@ class Heuristics_TOPF:
         gamma = 0.0001
         quality = taskcount - gamma * cost
 
-        return bestSolution, self.c, thisSeed, quality
+        return bestSolution, self.c, self.thisSeed, quality
 
 
 

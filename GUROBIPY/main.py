@@ -23,6 +23,8 @@ import itertools
 import numpy as np
 from gurobipy import *
 import csv
+import random as rnd
+import sys
 
 # Importing required project modules
 import environment as env
@@ -239,7 +241,7 @@ def multi_run_heuristics( robots_range, node_range, L_range, Tmax_range, velocit
         save_topf_data_heuristic(seed, cost, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name)
 
 
-def multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, auto_open_flag=0):
+def multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, thisSeed, auto_open_flag=0):
     '''
     Multiple runs for TOPF experiments with randomly generated input
     :param robots_range: list of number of robots
@@ -253,13 +255,15 @@ def multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_
     :param auto_open_flag: 0 to disable plot pop-up
     :return: Nothing, just plots (.html) the interactive route for each robot and saves data (.csv)
     '''
+    print("Seed: ",thisSeed)
     input_data = env.generate_input_combinations(robots_range, node_range, L_range, Tmax_range)
     # csvFile = open('../../../../input_combinations.csv')
     # input_data = list(csv.reader(csvFile))
     # csvFile.close()
     # input_data = np.array((input_data))[:,0:5]
     print(input_data)
-
+    input_data = input_data[2:3,:]
+    print(input_data)
     for row in input_data:
         [noOfRobots, noOfTasks, noOfDepots, L, T_max] = row
         noOfRobots = int(noOfRobots)
@@ -279,8 +283,8 @@ def multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_
 
             # randomly generated locations of tasks and robots
             K, T, D, S, E, T_loc, D_loc, N_loc, S_loc, E_loc, R, env_seed = env.generate_test_instance_topf(noOfRobots, noOfTasks,
-                                                                                                  noOfDepots)
-
+                                                                                                 noOfDepots, thisSeed)
+            print("Env seed", env_seed)
             # Object of the planner
             milp = topf.TOPF(velocity)
             # Optimize model
@@ -316,7 +320,7 @@ def multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_
                 S = ['D0']
                 E = ['D0']
                 # Run heuristics for the same problem instance
-                inst = Heuristics_TOPF(K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity)
+                inst = Heuristics_TOPF(K, T, D, S, T_loc, D_loc, N_loc, L, T_max, velocity, env_seed)
                 finalHeuristicSolution, c, seed, cost = inst.ILS()
 
                 arcsInOrderHeuristic = {}
@@ -532,20 +536,22 @@ def main():
 
     ###################################################################################################################
     '''Comparing TOPF milp and heuristic'''
-    # # Provide basic input for multiple runs
-    # robots_range = [2]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
-    # node_range = [5]    #[5, 10, 15, 20]#, 25, 30]
-    # L_range = [50]  #for arena size 100 x 100
-    # Tmax_range = [100]
-    # # L_range = [100]
-    # # Tmax_range = [200]
-    # velocity = 1
-    #
-    # # # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
-    # # change the name as per experiment
-    #
-    # expt_name = 'compare_topf_experiment'
-    # multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_range, velocity, expt_name)
+    # Provide basic input for multiple runs
+    robots_range = [2]  #[2, 3, 4, 5, 6, 7, 8, 9, 10]
+    node_range = [5]    #[5, 10, 15, 20]#, 25, 30]
+    L_range = [50]  #for arena size 100 x 100
+    Tmax_range = [100]
+    # L_range = [100]
+    # Tmax_range = [200]
+    velocity = 1
+
+    # # Generate input -> Plan -> Plot & Save image (.html) -> Save computational data (.csv)
+    # change the name as per experiment
+    thisSeed = rnd.randrange(sys.maxsize)
+    rnd.seed(thisSeed)
+    print("Initial:", thisSeed)
+    expt_name = 'compare_topf_experiment'
+    multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_range, velocity, expt_name, thisSeed)
 
     ###################################################################################################################
 
@@ -573,18 +579,18 @@ def main():
     ###################################################################################################################
 
     '''Experiments: TOPTW with randomly generated input '''
-    expt_name = 'toptw_experiment_large'
-    # Provide basic input for multiple runs
-    robots_range = [2, 3, 4, 5]#, 8, 10, 20]
-    task_range = [5, 10, 15, 20, 25, 30, 40, 50]#, 80, 100]
-    Tmax_range = [200, 500]
-    noOfStartNodes = 1
-    maxTimeInterval = 50
-    maxStartTime = 400 - maxTimeInterval
-    maxTaskDuration = 10
-    velocity = 1
-    # Generate input -> Plan -> Save computational data (.csv) -> Plot(.html)
-    multi_run_toptw_random_input(robots_range, task_range, Tmax_range, velocity, expt_name, noOfStartNodes, maxTaskDuration, maxTimeInterval)
+    # expt_name = 'toptw_experiment_large'
+    # # Provide basic input for multiple runs
+    # robots_range = [2, 3, 4, 5]#, 8, 10, 20]
+    # task_range = [5, 10, 15, 20, 25, 30, 40, 50]#, 80, 100]
+    # Tmax_range = [200, 500]
+    # noOfStartNodes = 1
+    # maxTimeInterval = 50
+    # maxStartTime = 400 - maxTimeInterval
+    # maxTaskDuration = 10
+    # velocity = 1
+    # # Generate input -> Plan -> Save computational data (.csv) -> Plot(.html)
+    # multi_run_toptw_random_input(robots_range, task_range, Tmax_range, velocity, expt_name, noOfStartNodes, maxTaskDuration, maxTimeInterval)
 
     ###################################################################################################################
 

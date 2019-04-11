@@ -51,7 +51,7 @@ def generate_input_combinations(robots_range, node_range, L_range, Tmax_range):
 
 
 
-def generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots):
+def generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots, thisSeed):
     '''
     Generating locations randomly in a 100 x 100 arena
     :param noOfRobots: number of robots
@@ -66,9 +66,9 @@ def generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots):
             N_loc: set of nodes (locations)
 
     '''
-    thisSeed = rnd.randrange(sys.maxsize)
-    rng = rnd.Random(thisSeed)
+    # thisSeed = rnd.randrange(sys.maxsize)
     rnd.seed(thisSeed)
+    print("Seed:", thisSeed)
 
     # creating sets
     T = ["T" + str(i) for i in range(noOfTasks)]
@@ -213,8 +213,8 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
              D: task duration
     '''
     thisSeed = rnd.randrange(sys.maxsize)
-    rng = rnd.Random(thisSeed)
     rnd.seed(thisSeed)
+    print("Seed:", thisSeed)
 
     # Set of robots
     W = ["W" + str(i) for i in range(noOfWorkerRobots)]
