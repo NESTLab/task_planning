@@ -46,7 +46,7 @@ class Heuristics_TOPF:
         self.c = {t: np.linalg.norm(np.array(N_loc.get(t[0])) - np.array(N_loc.get(t[1]))) for t in iter(self.edges)}
         self.f = self.c
 
-        
+
         conversionToBeReversed = False
 
         self.maxIterations = 25
@@ -58,7 +58,7 @@ class Heuristics_TOPF:
         #self.noImprovementIterations = 0
         #self.diversificationParam = 0
 
-       
+
 
 
 
@@ -502,7 +502,7 @@ class Heuristics_TOPF:
     def perturb(self, tour, A):
         modifiedTour = copy.deepcopy(tour)
         # compute no of depots and no of tasks in tour
-        noOfDepotsInCurrSol = 0
+        noOfDepotsInCurrSol = 1
         noOfTasksInCurrSol = 0
         for k in self.K:
             for node in tour[k]:
@@ -590,7 +590,7 @@ class Heuristics_TOPF:
         thisSeed = rnd.randrange(sys.maxsize)
         rng = rnd.Random(thisSeed)
         rnd.seed(thisSeed)
-        #print("Random Seed:", thisSeed)
+        print("Random Seed:", thisSeed)
 
         # Dict for holding the cnadidate solution
         candidateSolution = {}
@@ -638,6 +638,7 @@ class Heuristics_TOPF:
         candidateSolution = self.move(candidateSolution)
         bestSolution, _ = self.compareSolWithBest(candidateSolution, bestSolution)
 
+        print("Local search ended")
         # Local Search Ended -----------------------------------------------------
 
         while noImprovementIterations < 10:
@@ -714,7 +715,11 @@ class Heuristics_TOPF:
         #print('Best Solution:')
         #pprint.pprint(bestSolution)
         cost = self.tourCost(bestSolution)
-        return bestSolution, self.c, thisSeed, cost
+        taskcount = self.taskCount(bestSolution)
+        gamma = 0.0001
+        quality = taskcount - gamma * cost
+
+        return bestSolution, self.c, thisSeed, quality
 
 
 

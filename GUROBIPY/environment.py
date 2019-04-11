@@ -19,6 +19,7 @@ This file can also be imported as a module and contains the following functions:
 # Importing existing python modules
 import itertools
 import random as rnd
+import sys
 import os
 import numpy as np
 
@@ -65,19 +66,32 @@ def generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots):
             N_loc: set of nodes (locations)
 
     '''
+    thisSeed = rnd.randrange(sys.maxsize)
+    rng = rnd.Random(thisSeed)
+    rnd.seed(thisSeed)
+
     # creating sets
     T = ["T" + str(i) for i in range(noOfTasks)]
     K = ["K" + str(i) for i in range(noOfRobots)]
     D = ["D" + str(i) for i in range(noOfDepots)]
-    S = ['D0']
+    S = ['S0']
+    E = ['E0']
 
     # randomly generate location in 100 x 100 arena
     T_loc = {task: (100 * rnd.random(), 100 * rnd.random()) for task in T}
     D_loc = {loc: (100 * rnd.random(), 100 * rnd.random()) for loc in D}
-    # set of nodes
-    N_loc = {**T_loc, **D_loc}
 
-    return K, T, D, S, T_loc, D_loc, N_loc
+    S_loc = {loc: D_loc['D0'] for loc in S}
+    E_loc = {loc: D_loc['D0'] for loc in E}
+    N = T + D + S + E
+
+    # set of nodes
+    N_loc = {**T_loc, **D_loc, **S_loc, **E_loc}
+
+    # reward
+    R = {task: rnd.randint(1, 100) for task in T}
+
+    return K, T, D, S, E, T_loc, D_loc, N_loc, S_loc, E_loc, R, thisSeed
 
 def get_input_data_topf(filename):
     '''
@@ -116,7 +130,9 @@ def get_input_data_topf(filename):
         T = ["T" + str(i) for i in range(noOfTasks)]
         K = ["K" + str(i) for i in range(noOfRobots)]
         D = ["D" + str(i) for i in range(noOfDepots)]
-        S = ['D0']
+        #S = ['D0']
+        S = ['S0']
+        E = ['E0']
 
         # parsing second line
         second_line = f.readline()
@@ -158,15 +174,22 @@ def get_input_data_topf(filename):
         # File check failed
         print("Input file not recognized")
         return
+    S_loc = {loc: D_loc['D0'] for loc in S}
+    E_loc = {loc: D_loc['D0'] for loc in E}
+    N = T + D + S + E
 
     N_loc = {**T_loc, **D_loc}
 
+    N_loc = {**T_loc, **D_loc, **S_loc, **E_loc}
+
+    # reward
+    R = {task: 1 for task in T}
+
     # Add T_max
     # TODO: T_max = constant
-    T_max = 10000
+    T_max = 1000
 
-    return noOfRobots, noOfTasks, noOfDepots, L, T_max, K, T, D, S, T_loc, D_loc, N_loc
-
+    return noOfRobots, noOfTasks, noOfDepots, L, T_max, K, T, D, S, E, T_loc, D_loc, N_loc, S_loc, E_loc, R
 
 
 
@@ -189,6 +212,10 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
              C: set of task max start times
              D: task duration
     '''
+    thisSeed = rnd.randrange(sys.maxsize)
+    rng = rnd.Random(thisSeed)
+    rnd.seed(thisSeed)
+
     # Set of robots
     W = ["W" + str(i) for i in range(noOfWorkerRobots)]
     # Set of task nodes
@@ -223,7 +250,7 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
 
     N_loc = {**S_loc, **T_loc, **E_loc}
 
-    return W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D
+    return W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D, thisSeed
 
 
 

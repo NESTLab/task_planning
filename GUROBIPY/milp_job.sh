@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-#SBATCH -J 3R
+#SBATCH -J toptw
 #SBATCH -n 12
 #SBATCH -N 1
-#SBATCH -p long
+#SBATCH -p short
 #SBATCH --mem 64G
 
 # Stop execution after any error
@@ -30,7 +30,7 @@ MYUSER=$(whoami)
 # (Don't change this)
 LOCALDIR=/local
 # To be changed as per experiment (my cluster environment)
-MYDIR=~/work/topf_4_1_3R
+MYDIR=~/work/toptw_4_4
 
 # Folder where you want your data to be stored (my cluster environment)
 DATADIR=$MYDIR/data
@@ -87,4 +87,3 @@ mkdir $DATADIR
 mkdir $DATADIR/csv && mkdir $DATADIR/img
 cp -a *.csv $DATADIR/csv
 cp -a *.html $DATADIR/img
-

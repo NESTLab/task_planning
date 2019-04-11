@@ -7,11 +7,11 @@ import csv
 
 
 
-def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name):
+def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name, env_seed=0):
     runtime = plan.Runtime
     quality = plan.ObjVal
     # Save data
-    row = [noOfRobots, noOfTasks, noOfDepots, L, T_max, runtime, quality]
+    row = [noOfRobots, noOfTasks, noOfDepots, L, T_max, runtime, quality, env_seed]
 
     with open(expt_name+'.csv', 'a') as csvFile:
         writer = csv.writer(csvFile)
@@ -32,16 +32,14 @@ def save_topf_data_heuristic(seed,cost, noOfRobots, noOfTasks, noOfDepots, L, T_
     csvFile.close()
 
 
-def save_toptw_data(plan, noOfWorkerRobots, noOfTasks, T_max, expt_name):
+def save_toptw_data(plan, noOfWorkerRobots, noOfTasks, T_max, expt_name, seed):
     runtime = plan.Runtime
     quality = plan.ObjVal
     # Save data
-    row = [noOfWorkerRobots, noOfTasks, T_max, runtime, quality]
+    row = [noOfWorkerRobots, noOfTasks, T_max, runtime, quality, seed]
 
     with open(expt_name+'.csv', 'a') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 
     csvFile.close()
-
-

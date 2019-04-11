@@ -18,14 +18,17 @@ import matplotlib.animation as animation
 
 
 class Visualization_TOPF:
-    def __init__(self, K, T, D, S, T_loc, D_loc, c):
+    def __init__(self, K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c):
         self.K = K
         self.T = T
         self.D = D
         self.S = S
+        self.R = R
         self.N = self.T + self.D
         self.T_loc = T_loc
         self.D_loc = D_loc
+        self.S_loc = S_loc
+        self.E_loc = E_loc
         self.c = c
         self.arcsInOrder = {k: [] for k in self.K}
 
@@ -93,8 +96,7 @@ class Visualization_TOPF:
 
         for t in self.T_loc:
             x, y = self.T_loc.get(t)
-            disp_text = 'NodeID: ' + t + '<br>f_left: ' + \
-                "{0:.2f}".format(remainingFuel[t])
+            disp_text = 'NodeID: ' + t  + '<br>Reward: '+ str(self.R[t]) + '<br>f_left: ' + "{0:.2f}".format(remainingFuel[t])
             taskTrace['x'] += tuple([x])
             taskTrace['y'] += tuple([y])
             taskTrace['text'] += tuple([t])
@@ -168,7 +170,7 @@ class Visualization_TOPF:
             )
         )
 
-        N_loc = {**S_loc, **self.T_loc}
+        N_loc = {**self.T_loc, **self.D_loc, **self.S_loc, **self.E_loc}
         for arc in arcsInOrder:
             x0, y0 = N_loc.get(arc[0])
             x1, y1 = N_loc.get(arc[1])
