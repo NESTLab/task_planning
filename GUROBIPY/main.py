@@ -262,8 +262,7 @@ def multi_run_topf_random_input_compare(robots_range, node_range, L_range, Tmax_
     # csvFile.close()
     # input_data = np.array((input_data))[:,0:5]
     print(input_data)
-    input_data = input_data[2:3,:]
-    print(input_data)
+    
     for row in input_data:
         [noOfRobots, noOfTasks, noOfDepots, L, T_max] = row
         noOfRobots = int(noOfRobots)
