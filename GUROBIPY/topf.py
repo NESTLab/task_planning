@@ -333,7 +333,7 @@ class TOPF:
             if arc[0] in E and arc[1] in S:
                 arc_ub[arc] = 0  # You cannot go from end to start
 
-        k_y = [(i, k) for i in T for k in K]
+        #k_y = [(i, k) for i in T for k in K]
 
 
         '''Define the model and decision variables'''
@@ -341,14 +341,14 @@ class TOPF:
         model = Model('OrienteeringFuelConstrainedRobots')
         # Decision variables and their bounds
         x = model.addVars(arcs, lb=0, ub=arc_ub, name="x", vtype=GRB.INTEGER)
-        y = model.addVars(k_y, name="y", vtype=GRB.BINARY)
+        y = model.addVars(T, name="y", vtype=GRB.BINARY)
         r = model.addVars(T, lb=0, ub=L, vtype=GRB.CONTINUOUS, name="r")
         p = model.addVars(arcs, name="p", vtype=GRB.INTEGER)
 
         # Objective function
         gamma = 0.0001
         # rewards
-        objExpr1 = quicksum(y[i, k] for i in T for k in K)
+        objExpr1 = quicksum(y[i] for i in T)
         objExpr2 = quicksum(gamma * c[i, j] * x[i, j, k] for k in K for i in N for j in N if i != j)
 
         objFun = objExpr1 - objExpr2
@@ -372,7 +372,7 @@ class TOPF:
 
         # model.write("x.lp")
         # 4. each task visited once or never
-        c4 = model.addConstrs((quicksum(y[i, k] for k in K) <= 1 for i in T), name="c4")
+        c4 = model.addConstrs((y[i] <= 1 for i in T), name="c4")
 
 
         # 5. robot enters a node, leaves a node
@@ -380,11 +380,11 @@ class TOPF:
                                 (quicksum(x[h, j, k] for j in N if j != h and j not in S))
                                 for h in N for k in K if h not in S and h not in E), name="c5_1")
 
-        c52 = model.addConstrs(((quicksum(x[i, h, k] for i in N if i != h and i not in S)) ==
-                                y[h, k] for h in T for k in K), name="c5_2")
+        c52 = model.addConstrs(((quicksum(x[i, h, k] for k in K for i in N if i!=h and i not in S)) == 
+                                    y[h] for h in T), name="c5_2")
 
-        c53 = model.addConstrs(((quicksum(x[h, j, k] for j in N if j != h and j not in E)) ==
-                                y[h, k] for h in T for k in K), name="c5_3")
+        c53 = model.addConstrs(((quicksum(x[h, j, k] for k in K for j in N if j!=h and j not in E)) == 
+                                    y[h] for h in T), name="c5_3")
 
         '''fuel constraints'''
         # 6. Ensure fuel conservation when the UAV travels between two targets
@@ -410,12 +410,12 @@ class TOPF:
         c10 = model.addConstrs((0 <= r[i] <= L for i in T), name="c10")
 
         # 11. Total fuel consumed by the UAV must be less than or equal to  𝐿  times the total number of refueling visits
-        c11 = model.addConstrs(((quicksum(f[i, j] * x[i, j, k] for i in N for j in N if i != j)) <=
-                                L * (quicksum(x[d, i, k] for i in N for d in D if d != i)) for k in K), name="c11")
+        #c11 = model.addConstrs(((quicksum(f[i, j] * x[i, j, k] for i in N for j in N if i != j)) <=
+        #                        L * (quicksum(x[d, i, k] for i in N for d in D if d != i)) for k in K), name="c11")
 
         # 12. Ensure that each robot is back at the start location before 𝑇𝑚𝑎𝑥
         c12 = model.addConstrs(
-            (quicksum(c[i, j] * x[i, j, k] / self.vel for i in N for j in N if i != j and i not in S and j not in S) <= T_max
+            (quicksum(c[i, j] * x[i, j, k] / self.vel for i in N for j in N if i != j) <= T_max
              for k in K), name="c12")
 
         '''capacity & flow constraints'''
