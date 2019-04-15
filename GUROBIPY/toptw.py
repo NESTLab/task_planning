@@ -26,7 +26,7 @@ class TOPTW:
         self.vel = velocity
 
 
-    def planner(self, W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max):
+    def planner(self, W, S, T, E, N_loc, noOfWorkerRobots, Q, O, C, D, T_max, R):
         '''Pre-processing'''
         # Nodes and arcs
         N = S + T + E

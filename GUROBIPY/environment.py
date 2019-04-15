@@ -68,7 +68,7 @@ def generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots, thisSeed):
     '''
     # thisSeed = rnd.randrange(sys.maxsize)
     rnd.seed(thisSeed)
-    print("Seed:", thisSeed)
+    # print("Seed:", thisSeed)
 
     # creating sets
     T = ["T" + str(i) for i in range(noOfTasks)]
@@ -91,7 +91,7 @@ def generate_test_instance_topf(noOfRobots, noOfTasks, noOfDepots, thisSeed):
     # reward
     R = {task: rnd.randint(1, 100) for task in T}
 
-    return K, T, D, S, E, T_loc, D_loc, N_loc, S_loc, E_loc, R, thisSeed
+    return K, T, D, S, E, T_loc, D_loc, N_loc, S_loc, E_loc, R
 
 def get_input_data_topf(filename):
     '''
@@ -193,7 +193,7 @@ def get_input_data_topf(filename):
 
 
 
-def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, maxStartTime, maxTimeInterval):
+def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, maxTaskDuration, maxStartTime, maxTimeInterval, thisSeed):
     '''
     Generating locations randomly in a 100 x 100 arena
     :param noOfWorkerRobots: number of robots
@@ -212,9 +212,8 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
              C: set of task max start times
              D: task duration
     '''
-    thisSeed = rnd.randrange(sys.maxsize)
     rnd.seed(thisSeed)
-    print("Seed:", thisSeed)
+    # print("Seed:", thisSeed)
 
     # Set of robots
     W = ["W" + str(i) for i in range(noOfWorkerRobots)]
@@ -250,7 +249,10 @@ def generate_test_instance_toptw(noOfWorkerRobots, noOfTasks, noOfStartNodes, ma
 
     N_loc = {**S_loc, **T_loc, **E_loc}
 
-    return W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D, thisSeed
+    # reward
+    R = {task: rnd.randint(1, 100) for task in T}
+
+    return W, S, T, E, S_loc, E_loc, T_loc, N_loc, Q, O, C, D, R, A
 
 
 

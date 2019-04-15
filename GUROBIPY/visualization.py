@@ -234,6 +234,19 @@ class Visualization_TOPF:
             for key, value in self.arcsInOrder.items():
                 writer.writerow([key, value])
 
+            writer.writerow("R")
+            for key, value in self.R.items():
+                writer.writerow([key, value])
+
+            writer.writerow("T")
+            for key, value in self.T_loc.items():
+                writer.writerow([key, value])
+
+            writer.writerow("D")
+            for key, value in self.D_loc.items():
+                writer.writerow([key, value])
+
+
         return self.arcsInOrder
 
     def save_plot_topf_heuristic(self, arcsInOrder, name, auto_open_flag):
@@ -254,7 +267,7 @@ class Visualization_TOPF:
 
 
 class Visualization_TOPTW:
-    def __init__(self, model, W, T, D, S, E, S_loc, E_loc, T_loc, c):
+    def __init__(self, model, W, T, D, S, E, S_loc, E_loc, T_loc, c, A, Q, R):
         self.W = W
         self.T = T
         self.D = D
@@ -264,6 +277,9 @@ class Visualization_TOPTW:
         self.E_loc = E_loc
         self.T_loc = T_loc
         self.c = c
+        self.Q = Q
+        self.A = A
+        self.R = R
 
         self.v = model.getVars()
 
@@ -469,4 +485,39 @@ class Visualization_TOPTW:
             for key, value in self.arcsInOrder.items():
                 writer.writerow([key, value])
 
-        # TODO save arrival times
+            writer.writerow("A")
+            for key, value in self.A.items():
+                writer.writerow([key, value])
+
+            writer.writerow("a")
+            for key, value in self.arrivalTimes.items():
+                writer.writerow([key, value])
+
+            writer.writerow("Q")
+            for key, value in self.Q.items():
+                writer.writerow([key, value])
+
+            writer.writerow("D")
+            for key, value in self.D.items():
+                writer.writerow([key, value])
+
+            writer.writerow("R")
+            for key, value in self.R.items():
+                writer.writerow([key, value])
+
+            writer.writerow("T")
+            for key, value in self.T_loc.items():
+                writer.writerow([key, value])
+
+            writer.writerow("S")
+            for key, value in self.S_loc.items():
+                writer.writerow([key, value])
+
+            writer.writerow("E")
+            for key, value in self.E_loc.items():
+                writer.writerow([key, value])
+
+        return self.arcsInOrder
+
+
+
