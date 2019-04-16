@@ -45,10 +45,10 @@ def main():
     # csvFile = open('input_combinations.csv')
     # input_data = list(csv.reader(csvFile))
     # csvFile.close()
-    robots_range = [2]
-    node_range = [5, 10, 15, 20]#, 25, 30, 35, 40, 45, 50]
-    L_range = [50]
-    Tmax_range = [100]
+    robots_range = [2,3]
+    node_range = [10]#, 15, 20]#, 25, 30, 35, 40, 45, 50]
+    L_range = [75]
+    Tmax_range = [200]
     input_data = env.generate_input_combinations(robots_range, node_range, L_range, Tmax_range)
 
     thisSeed = rnd.randrange(sys.maxsize)
@@ -109,7 +109,7 @@ def main():
                 # For data collection, generates .csv file
                 save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name+'_milp', thisSeed)
 
-
+                '''
                 print("-----------------Heuristic Approach------------------------")
                 S = ['D0']
                 E = ['D0']
@@ -132,11 +132,11 @@ def main():
 
                 # For data collection, generates .csv file
                 save_topf_data_heuristic(seed, cost, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name+'_heuristic')
-
+                '''
                 break
 
     ###################################################################################################################
-
+    '''
     maxTimeInterval = 50
     maxTaskDuration = 10
     noOfStartNodes = 1
@@ -187,6 +187,7 @@ def main():
                 save_toptw_data(plan, noOfRobots, noOfTasks, T_max, expt_name, thisSeed)
 
                 break
+    '''
 
 
 
