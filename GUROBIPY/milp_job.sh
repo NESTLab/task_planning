@@ -3,7 +3,7 @@
 #SBATCH -n 12
 #SBATCH -N 1
 #SBATCH -p short
-#SBATCH --mem 64G
+#SBATCH --mem 2G
 
 # Stop execution after any error
 set -e
