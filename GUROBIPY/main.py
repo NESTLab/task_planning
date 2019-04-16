@@ -46,7 +46,7 @@ def main():
     # input_data = list(csv.reader(csvFile))
     # csvFile.close()
     robots_range = [2]
-    node_range = [10]#, 15, 20]#, 25, 30, 35, 40, 45, 50]
+    node_range = [1,2,3,4,5,6,7,8,9,10] #, 15, 20]#, 25, 30, 35, 40, 45, 50]
     L_range = [75]
     Tmax_range = [200]
     input_data = env.generate_input_combinations(robots_range, node_range, L_range, Tmax_range)

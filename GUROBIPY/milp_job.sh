@@ -78,8 +78,10 @@ module load gurobi # Comment this if running heuristic
 #python3 -m pip install plotly --user
 #mkdir C-mdvrp # comment this if running random input
 #cp $MYDIR/C-mdvrp/* $WORKDIR/C-mdvrp/  # comment this if running random input
-python3 $MYDIR/main.py
-
+for i in {1..10}
+do
+    python3 $MYDIR/main.py
+done
 # Transfer generated *.dat files into home directory
 # Create the two folders (my cluster environment)
 # Make sure they ARE NOT already present

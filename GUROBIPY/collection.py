@@ -16,8 +16,14 @@ def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name,
     with open(expt_name+'.csv', 'a') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
-
     csvFile.close()
+
+    dataForPlots = [noOfTasks, quality, env_seed]
+    with open('data_'+expt_name+'.csv', 'a') as csvFile2:
+        writer = csv.writer(csvFile2)
+        writer.writerow(dataForPlots)
+    csvFile2.close()
+
 
 
 def save_topf_data_heuristic(seed,cost, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name):
