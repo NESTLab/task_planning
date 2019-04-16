@@ -18,7 +18,7 @@ import matplotlib.animation as animation
 
 
 class Visualization_TOPF:
-    def __init__(self, K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c):
+    def __init__(self, K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max):
         self.K = K
         self.T = T
         self.D = D
@@ -30,7 +30,17 @@ class Visualization_TOPF:
         self.S_loc = S_loc
         self.E_loc = E_loc
         self.c = c
+        self.L = L
+        self.T_max = T_max    
         self.arcsInOrder = {k: [] for k in self.K}
+
+    def tourNodeRepresentation(self, arcBasedTour):
+        nodeBasedTour = {k:[] for k in self.K}
+        for k in self.K:
+            nodeBasedTour[k] = [arc[0] for arc in arcBasedTour[k]]
+            nodeBasedTour[k].append(arcBasedTour[k][-1][1])
+            # print (nodeBasedPath)
+        return nodeBasedTour
 
     def preprocessing(self, model):
         v = model.getVars()
@@ -150,7 +160,7 @@ class Visualization_TOPF:
             showlegend=True,
             mode='lines')
 
-        node_info_trace = go.Scatter(
+        edge_info_trace = go.Scatter(
             text=[],
             x=[],
             y=[],
@@ -176,12 +186,18 @@ class Visualization_TOPF:
             x1, y1 = N_loc.get(arc[1])
             edge_trace['x'] += tuple([x0, x1])
             edge_trace['y'] += tuple([y0, y1])
-
-            node_info_trace['x'] += tuple([(x0 + x1) / 2])
-            node_info_trace['y'] += tuple([(y0 + y1) / 2])
-            node_info_trace['text'] += tuple(
-                ["Weight: " + "{0:.2f}".format(np.linalg.norm(np.array([x0, y0]) - np.array([x1, y1])))])
-        return edge_trace, node_info_trace
+        
+        allNodesReq = self.T + self.D
+        for n0 in allNodesReq:
+            for n1 in allNodesReq:
+                if n0 != n1:
+                    x0, y0 = N_loc.get(n0)
+                    x1, y1 = N_loc.get(n1)
+                    edge_info_trace['x'] += tuple([(x0 + x1) / 2])
+                    edge_info_trace['y'] += tuple([(y0 + y1) / 2])
+                    edge_info_trace['text'] += tuple(
+                        ["Weight: " + "{0:.2f}".format(np.linalg.norm(np.array([x0, y0]) - np.array([x1, y1])))])
+        return edge_trace, edge_info_trace
 
     def drawArena(self, remainingFuel, isEdge=1):
         task_trace = self.taskNodesTrace(remainingFuel)
@@ -202,7 +218,9 @@ class Visualization_TOPF:
         #    print(edge_trace['x'][0])
 
         layout = go.Layout(
-            title='Arena',
+            title='{} robots, {} tasks, {} depots. f={:.1f}, Tmax={} <br> <sub>{}</sub>'
+                    .format(len(self.K), len(self.T), len(self.D),self.L,self.T_max,
+                                "<br>".join("{}: {}".format(k, v) for k, v in self.tourNodeRepresentation(self.arcsInOrder).items())),
             hovermode='closest',
             xaxis=dict(
                 title='X-Coord',

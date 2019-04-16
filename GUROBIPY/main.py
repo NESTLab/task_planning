@@ -45,7 +45,7 @@ def main():
     # csvFile = open('input_combinations.csv')
     # input_data = list(csv.reader(csvFile))
     # csvFile.close()
-    robots_range = [2,3]
+    robots_range = [2]
     node_range = [10]#, 15, 20]#, 25, 30, 35, 40, 45, 50]
     L_range = [75]
     Tmax_range = [200]
@@ -98,7 +98,7 @@ def main():
             elif (plan.status == GRB.Status.OPTIMAL):
 
                 # Plot the routes using plotly interactive GUI
-                draw = Visualization_TOPF(K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c)
+                draw = Visualization_TOPF(K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
                 name = 'Fplot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
 
