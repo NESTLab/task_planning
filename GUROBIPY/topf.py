@@ -380,10 +380,10 @@ class TOPF:
                                 (quicksum(x[h, j, k] for j in N if j != h and j not in S))
                                 for h in N for k in K if h not in S and h not in E), name="c5_1")
 
-        c52 = model.addConstrs(((quicksum(x[i, h, k] for k in K for i in N if i!=h and i not in S)) == 
+        c52 = model.addConstrs(((quicksum(x[i, h, k] for k in K for i in N if i!=h)) == 
                                     y[h] for h in T), name="c5_2")
 
-        c53 = model.addConstrs(((quicksum(x[h, j, k] for k in K for j in N if j!=h and j not in E)) == 
+        c53 = model.addConstrs(((quicksum(x[h, j, k] for k in K for j in N if j!=h)) == 
                                     y[h] for h in T), name="c5_3")
 
         '''fuel constraints'''
@@ -394,17 +394,17 @@ class TOPF:
         c62 = model.addConstrs(
             (r[j] - r[i] + f[i, j] >= -M * (1 - x[i, j, k]) for i in T for j in T for k in K if i != j), name="c62")
 
-        # 7. Establish the condition that the fuel level at a target visited after leaving a depot
+        # 7. Establish the condition that the fuel level at a target visited after leaving a  (or a start node)
         # is equal to the fuel capacity minus the fuel cost of traversal
-        c71 = model.addConstrs((r[j] - L + f[i, j] <= M * (1 - x[i, j, k]) for i in D for j in T for k in K), name="c71")
-        c72 = model.addConstrs((r[j] - L + f[i, j] >= -M * (1 - x[i, j, k]) for i in D for j in T for k in K), name="c72")
+        c71 = model.addConstrs((r[j] - L + f[i, j] <= M * (1 - x[i, j, k]) for i in D+S for j in T for k in K), name="c71")
+        c72 = model.addConstrs((r[j] - L + f[i, j] >= -M * (1 - x[i, j, k]) for i in D+S for j in T for k in K), name="c72")
 
-        # 8. Restrict the fuel lost in approaching a depot to being at most equal to the
+        # 8. Restrict the fuel lost in approaching a depot (or an end node) to being at most equal to the
         # cost of travel from the preceding target
-        c8 = model.addConstrs((r[i] - f[i, j] >= -M * (1 - x[i, j, k]) for i in T for j in D for k in K), name="c8")
+        c8 = model.addConstrs((r[i] - f[i, j] >= -M * (1 - x[i, j, k]) for i in T for j in D+E for k in K), name="c8")
 
-        # 9. Restricts direct paths between refueling sites to exist only between sites at most 𝑈 distance away
-        c9 = model.addConstrs((f[i, j] * x[i, j, k] <= L for i in D for j in D for k in K if i != j), name="c9")
+        # 9. Restricts direct paths between refueling sites (or the start/end nodes) to exist only between sites at most 𝑈 distance away
+        c9 = model.addConstrs((f[i, j] * x[i, j, k] <= L for i in D+S+E for j in D+S+E for k in K if i != j), name="c9")
 
         # 10. fuel level parameter to be bounded between 0 and L
         c10 = model.addConstrs((0 <= r[i] <= L for i in T), name="c10")
