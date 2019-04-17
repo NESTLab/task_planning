@@ -85,7 +85,7 @@ done
 # Transfer generated *.dat files into home directory
 # Create the two folders (my cluster environment)
 # Make sure they ARE NOT already present
-mkdir $DATADIR
-mkdir $DATADIR/csv && mkdir $DATADIR/img
+mkdir -p $DATADIR
+mkdir -p $DATADIR/csv && mkdir -p $DATADIR/img
 cp -a *.csv $DATADIR/csv
 cp -a *.html $DATADIR/img
