@@ -19,12 +19,21 @@ def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name,
         writer = csv.writer(csvFile)
         writer.writerow(row)
     csvFile.close()
+    curr_exp = 'TOPF_{}_{}_{}'.format(noOfRobots, noOfTasks, noOfDepots)
+    if 'MM' in expt_name:
+        curr_exp += '_MM'
+    # Add the iteration number coming from bash
+    try:
+        curr_exp += '_'+str(sys.argv[1])
+    except IndexError:
+        pass
 
-    dataForPlots = [noOfTasks, quality, MIPGap, env_seed]
+    dataForPlots = [noOfTasks, quality, MIPGap, env_seed, curr_exp]
     if not os.path.isfile('data_'+expt_name+'.csv'):
         with open('data_'+expt_name+'.csv', 'a') as csvFile2:
             writer = csv.writer(csvFile2)
-            writer.writerow(['noOfTasks', 'ObjVal', 'MIPGap', ' env_seed'])
+            writer.writerow(['noOfTasks', 'ObjVal', 'MIPGap',
+                             ' env_seed', 'expt_name'])
         csvFile2.close()
 
     with open('data_'+expt_name+'.csv', 'a') as csvFile2:
