@@ -98,8 +98,8 @@ def main():
                 draw = Visualization_TOPF(
                     K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
-                name = 'TOPF_' + str(noOfRobots) + '_' + \
-                    str(noOfTasks) + '_' + str(noOfDepots)
+                name = 'TOPF_R' + str(noOfRobots) + '_T' + \
+                    str(noOfTasks) + '_D' + str(noOfDepots)
                 try:
                     name += '_iter'+str(sys.argv[1])
                 except IndexError:
@@ -138,8 +138,8 @@ def main():
                 draw = Visualization_TOPF(
                     K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
-                name = 'TOPF_' + str(noOfRobots) + '_' + \
-                    str(noOfTasks) + '_' + str(noOfDepots) + \
+                name = 'TOPF_R' + str(noOfRobots) + '_T' + \
+                    str(noOfTasks) + '_D' + str(noOfDepots) + \
                     '_MM'
                 try:
                     name += '_iter'+str(sys.argv[1])

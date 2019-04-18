@@ -20,7 +20,7 @@ def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name,
         writer = csv.writer(csvFile)
         writer.writerow(row)
     csvFile.close()
-    curr_exp = 'TOPF_{}_{}_{}'.format(noOfRobots, noOfTasks, noOfDepots)
+    curr_exp = 'TOPF_R{}_T{}_D{}'.format(noOfRobots, noOfTasks, noOfDepots)
     if 'MM' in expt_name:
         curr_exp += '_MM'
     # Add the iteration number coming from bash
