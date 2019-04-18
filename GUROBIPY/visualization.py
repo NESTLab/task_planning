@@ -199,7 +199,7 @@ class Visualization_TOPF:
                         ["Weight: " + "{0:.2f}".format(np.linalg.norm(np.array([x0, y0]) - np.array([x1, y1])))])
         return edge_trace, edge_info_trace
 
-    def drawArena(self, remainingFuel, isEdge=1):
+    def drawArena(self, remainingFuel, modelName='', isEdge=1):
         task_trace = self.taskNodesTrace(remainingFuel)
         start_trace = self.startNodesTrace(self.D_loc)
         # end_trace = endNodesTrace(E_loc)
@@ -218,8 +218,8 @@ class Visualization_TOPF:
         #    print(edge_trace['x'][0])
 
         layout = go.Layout(
-            title='{} robots, {} tasks, {} depots. f={:.1f}, Tmax={} <br> <sub>{}</sub>'
-                    .format(len(self.K), len(self.T), len(self.D),self.L,self.T_max,
+            title='{}: {} robot(s), {} task(s), {} depot(s). f={:.1f}, Tmax={} <br> <sub>{}</sub>'
+                    .format(modelName, len(self.K), len(self.T), len(self.D),self.L,self.T_max,
                                 "<br>".join("{}: {}".format(k, v) for k, v in self.tourNodeRepresentation(self.arcsInOrder).items())),
             hovermode='closest',
             xaxis=dict(
@@ -242,8 +242,8 @@ class Visualization_TOPF:
 
     def save_plot_topf_milp(self, model, name, auto_open_flag=0):
         remainingFuel = self.preprocessing(model)
-
-        fig = self.drawArena(remainingFuel, 1)
+        
+        fig = self.drawArena(remainingFuel, model.ModelName, 1)
         py.plot(fig, filename=name + '.html',
                 auto_open=auto_open_flag, include_plotlyjs='cdn')
 

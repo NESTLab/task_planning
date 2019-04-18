@@ -35,8 +35,6 @@ from collection import save_topf_data, save_toptw_data, save_topf_data_heuristic
 from heuristics import Heuristics_TOPF
 
 
-
-
 def main():
     '''
     Main function
@@ -46,10 +44,12 @@ def main():
     # input_data = list(csv.reader(csvFile))
     # csvFile.close()
     robots_range = [2]
-    node_range = [1,2,3,4,5,6,7,8,9,10] #, 15, 20]#, 25, 30, 35, 40, 45, 50]
+    # , 15, 20]#, 25, 30, 35, 40, 45, 50]
+    node_range = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     L_range = [75]
     Tmax_range = [200]
-    input_data = env.generate_input_combinations(robots_range, node_range, L_range, Tmax_range)
+    input_data = env.generate_input_combinations(
+        robots_range, node_range, L_range, Tmax_range)
 
     thisSeed = rnd.randrange(sys.maxsize)
     rnd.seed(thisSeed)
@@ -57,10 +57,9 @@ def main():
 
     velocity = 1
 
-
     ###################################################################################################################
     expt_name = 'topf_experiment'
-    
+
     for row in input_data:
         [noOfRobots, noOfTasks, noOfDepots, L, T_max] = row
         noOfRobots = int(noOfRobots)
@@ -71,21 +70,20 @@ def main():
         print("===========================================================")
         print(noOfRobots, noOfTasks, noOfDepots, L, T_max)
 
-        print("-------------------TOPF MILP Solution---------------------------")
-
         # itr to track number of re-runs
         retry_count = 0
         # to re-run the randomly generated input if the model turns out to be infeasible
         while(True):
+            print("-------------------TOPF MILP Solution---------------------------")
 
             # randomly generated locations of tasks and robots
             K, T, D, S, E, T_loc, D_loc, N_loc, S_loc, E_loc, R = env.generate_test_instance_topf(noOfRobots, noOfTasks,
-                                                                                                 noOfDepots, thisSeed)
+                                                                                                  noOfDepots, thisSeed)
             # Object of the planner
             milp_topf = topf.TOPF(velocity)
             # Optimize model
-            c, plan = milp_topf.new_planner(K, T, D, S, E, N_loc, noOfRobots, noOfTasks, L, T_max, R)
-
+            c, plan = milp_topf.new_planner(
+                K, T, D, S, E, N_loc, noOfRobots, noOfTasks, L, T_max, R)
 
             # get out of the loop if runtime (model) is feasible
             if (plan.status == GRB.Status.INF_OR_UNBD or plan.status == GRB.Status.INFEASIBLE
@@ -96,19 +94,51 @@ def main():
                 else:
                     break
             elif (plan.status == GRB.Status.OPTIMAL):
-
                 # Plot the routes using plotly interactive GUI
-                draw = Visualization_TOPF(K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
+                draw = Visualization_TOPF(
+                    K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
-                name = 'Fplot' + str(noOfRobots) + '_' + str(noOfTasks) + '_' + str(noOfDepots)
+                name = 'TOPF_' + str(noOfRobots) + '_' + \
+                    str(noOfTasks) + '_' + str(noOfDepots)
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
                 print(routes)
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
-                save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name+'_milp', thisSeed)
+                save_topf_data(plan, noOfRobots, noOfTasks,
+                               noOfDepots, L, T_max, expt_name+'_milp', thisSeed)
 
+            print("-------------TOPF MINIMAX MILP Solution--------------------")
+
+            c, plan = milp_topf.new_planner_minmax(
+                K, T, D, S, E, N_loc, noOfRobots, noOfTasks, L, T_max, R)
+
+           # get out of the loop if runtime (model) is feasible
+            if (plan.status == GRB.Status.INF_OR_UNBD or plan.status == GRB.Status.INFEASIBLE
+                    or plan.status == GRB.Status.UNBOUNDED or plan.ObjVal < 0):
+                if (retry_count < 15):
+                    retry_count = retry_count + 1
+                    print('TOPF MINMAX Solution Unbounded or Infeasible or ObjVal < 0')
+                    continue
+                else:
+                    break
+            elif (plan.status == GRB.Status.OPTIMAL):
+                retry_count = 0
+                # Plot the routes using plotly interactive GUI
+                draw = Visualization_TOPF(
+                    K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
+                # filename if the plot to be saved
+                name = 'TOPF_' + str(noOfRobots) + '_' + \
+                    str(noOfTasks) + '_' + str(noOfDepots) + '_MM'
+
+                # plot and save
+                routes = draw.save_plot_topf_milp(plan, name, 0)
+                print(routes)
+                print("Quality:", plan.ObjVal)
+                # For data collection, generates .csv file
+                save_topf_data(plan, noOfRobots, noOfTasks,
+                               noOfDepots, L, T_max, expt_name+'_milpMM', thisSeed)
                 '''
                 print("-----------------Heuristic Approach------------------------")
                 S = ['D0']
@@ -190,7 +220,5 @@ def main():
     '''
 
 
-
-
 if __name__ == "__main__":
-     main()
+    main()
