@@ -88,5 +88,5 @@ done
 rm -rf $DATADIR
 mkdir $DATADIR
 mkdir $DATADIR/csv && mkdir $DATADIR/img
-cp -a *.csv $DATADIR/csv
-cp -a *.html $DATADIR/img
+mv -a *.csv $DATADIR/csv
+mv -a *.html $DATADIR/img
