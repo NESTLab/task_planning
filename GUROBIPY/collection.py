@@ -24,7 +24,7 @@ def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name,
         curr_exp += '_MM'
     # Add the iteration number coming from bash
     try:
-        curr_exp += '_'+str(sys.argv[1])
+        curr_exp += '_iter'+str(sys.argv[1])
     except IndexError:
         pass
 

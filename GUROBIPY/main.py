@@ -101,7 +101,7 @@ def main():
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
                     str(noOfTasks) + '_' + str(noOfDepots)
                 try:
-                    name += '_'+str(sys.argv[1])
+                    name += '_iter'+str(sys.argv[1])
                 except IndexError:
                     pass
 
@@ -112,7 +112,7 @@ def main():
                 # For data collection, generates .csv file
                 expt_csv_filename = expt_name+'_milp'
                 try:
-                    expt_csv_filename += '_'+str(sys.argv[1])
+                    expt_csv_filename += '_iter'+str(sys.argv[1])
                 except IndexError:
                     pass
                 save_topf_data(plan, noOfRobots, noOfTasks,
@@ -142,7 +142,7 @@ def main():
                     str(noOfTasks) + '_' + str(noOfDepots) + \
                     '_MM'
                 try:
-                    name += '_'+str(sys.argv[1])
+                    name += '_iter'+str(sys.argv[1])
                 except IndexError:
                     pass
 
@@ -153,7 +153,7 @@ def main():
                 # For data collection, generates .csv file
                 expt_csv_filename = expt_name+'_milpMM'
                 try:
-                    expt_csv_filename += '_'+str(sys.argv[1])
+                    expt_csv_filename += '_iter'+str(sys.argv[1])
                 except IndexError:
                     pass
                 save_topf_data(plan, noOfRobots, noOfTasks,
