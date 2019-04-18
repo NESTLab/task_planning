@@ -100,8 +100,11 @@ def main():
                 # filename if the plot to be saved
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
                     str(noOfTasks) + '_' + str(noOfDepots)
-                if sys.argv[1]:
+                try:
                     name += '_'+str(sys.argv[1])
+                except IndexError:
+                    pass
+                continue
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
@@ -109,8 +112,11 @@ def main():
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
                 expt_csv_filename = expt_name+'_milp'
-                if sys.argv[1]:
+                try:
                     expt_csv_filename += '_'+str(sys.argv[1])
+                except IndexError:
+                    pass
+                continue
                 save_topf_data(plan, noOfRobots, noOfTasks,
                                noOfDepots, L, T_max, expt_csv_filename, thisSeed)
 
@@ -137,8 +143,11 @@ def main():
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
                     str(noOfTasks) + '_' + str(noOfDepots) + \
                     '_MM'
-                if sys.argv[1]:
+                try:
                     name += '_'+str(sys.argv[1])
+                except IndexError:
+                    pass
+                continue
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
@@ -146,8 +155,11 @@ def main():
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
                 expt_csv_filename = expt_name+'_milpMM'
-                if sys.argv[1]:
+                try:
                     expt_csv_filename += '_'+str(sys.argv[1])
+                except IndexError:
+                    pass
+                continue
                 save_topf_data(plan, noOfRobots, noOfTasks,
                                noOfDepots, L, T_max, expt_csv_filename, thisSeed)
                 '''
