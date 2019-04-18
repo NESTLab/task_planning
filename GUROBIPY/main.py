@@ -104,7 +104,6 @@ def main():
                     name += '_'+str(sys.argv[1])
                 except IndexError:
                     pass
-                continue
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
@@ -116,7 +115,6 @@ def main():
                     expt_csv_filename += '_'+str(sys.argv[1])
                 except IndexError:
                     pass
-                continue
                 save_topf_data(plan, noOfRobots, noOfTasks,
                                noOfDepots, L, T_max, expt_csv_filename, thisSeed)
 
@@ -147,7 +145,6 @@ def main():
                     name += '_'+str(sys.argv[1])
                 except IndexError:
                     pass
-                continue
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
@@ -159,7 +156,6 @@ def main():
                     expt_csv_filename += '_'+str(sys.argv[1])
                 except IndexError:
                     pass
-                continue
                 save_topf_data(plan, noOfRobots, noOfTasks,
                                noOfDepots, L, T_max, expt_csv_filename, thisSeed)
                 '''
