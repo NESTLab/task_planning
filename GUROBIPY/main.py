@@ -99,7 +99,8 @@ def main():
                     K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
-                    str(noOfTasks) + '_' + str(noOfDepots)
+                    str(noOfTasks) + '_' + str(noOfDepots) + \
+                    '_' + str(sys.argv[1])
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
@@ -107,7 +108,7 @@ def main():
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
                 save_topf_data(plan, noOfRobots, noOfTasks,
-                               noOfDepots, L, T_max, expt_name+'_milp', thisSeed)
+                               noOfDepots, L, T_max, expt_name+'_milp_'+str(sys.argv[1]), thisSeed)
 
             print("-------------TOPF MINIMAX MILP Solution--------------------")
 
@@ -130,7 +131,8 @@ def main():
                     K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
-                    str(noOfTasks) + '_' + str(noOfDepots) + '_MM'
+                    str(noOfTasks) + '_' + str(noOfDepots) + \
+                    '_MM_' + str(sys.argv[1])
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
@@ -138,7 +140,7 @@ def main():
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
                 save_topf_data(plan, noOfRobots, noOfTasks,
-                               noOfDepots, L, T_max, expt_name+'_milpMM', thisSeed)
+                               noOfDepots, L, T_max, expt_name+'_milpMM_'+str(sys.argv[1]), thisSeed)
                 '''
                 print("-----------------Heuristic Approach------------------------")
                 S = ['D0']

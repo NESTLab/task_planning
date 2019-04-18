@@ -80,7 +80,7 @@ module load gurobi # Comment this if running heuristic
 #cp $MYDIR/C-mdvrp/* $WORKDIR/C-mdvrp/  # comment this if running random input
 for i in {1..10}
 do
-    python3 $MYDIR/main.py
+    python3 $MYDIR/main.py ${i}
 done
 # Transfer generated *.dat files into home directory
 # Create the two folders (my cluster environment)

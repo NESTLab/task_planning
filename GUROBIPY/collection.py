@@ -24,7 +24,7 @@ def save_topf_data(plan, noOfRobots, noOfTasks, noOfDepots, L, T_max, expt_name,
     if not os.path.isfile('data_'+expt_name+'.csv'):
         with open('data_'+expt_name+'.csv', 'a') as csvFile2:
             writer = csv.writer(csvFile2)
-            writer.writerow(['noOfTasks', 'ObjVal', 'MIPGap', 'env_seed'])
+            writer.writerow(['noOfTasks', 'ObjVal', 'MIPGap', ' env_seed'])
         csvFile2.close()
 
     with open('data_'+expt_name+'.csv', 'a') as csvFile2:
