@@ -99,16 +99,20 @@ def main():
                     K, T, D, S, R, T_loc, D_loc, S_loc, E_loc, c, L, T_max)
                 # filename if the plot to be saved
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
-                    str(noOfTasks) + '_' + str(noOfDepots) + \
-                    '_' + str(sys.argv[1])
+                    str(noOfTasks) + '_' + str(noOfDepots)
+                if sys.argv[1]:
+                    name += '_'+str(sys.argv[1])
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
                 print(routes)
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
+                expt_csv_filename = expt_name+'_milp'
+                if sys.argv[1]:
+                    expt_csv_filename += '_'+str(sys.argv[1])
                 save_topf_data(plan, noOfRobots, noOfTasks,
-                               noOfDepots, L, T_max, expt_name+'_milp_'+str(sys.argv[1]), thisSeed)
+                               noOfDepots, L, T_max, expt_csv_filename, thisSeed)
 
             print("-------------TOPF MINIMAX MILP Solution--------------------")
 
@@ -132,15 +136,20 @@ def main():
                 # filename if the plot to be saved
                 name = 'TOPF_' + str(noOfRobots) + '_' + \
                     str(noOfTasks) + '_' + str(noOfDepots) + \
-                    '_MM_' + str(sys.argv[1])
+                    '_MM'
+                if sys.argv[1]:
+                    name += '_'+str(sys.argv[1])
 
                 # plot and save
                 routes = draw.save_plot_topf_milp(plan, name, 0)
                 print(routes)
                 print("Quality:", plan.ObjVal)
                 # For data collection, generates .csv file
+                expt_csv_filename = expt_name+'_milpMM'
+                if sys.argv[1]:
+                    expt_csv_filename += '_'+str(sys.argv[1])
                 save_topf_data(plan, noOfRobots, noOfTasks,
-                               noOfDepots, L, T_max, expt_name+'_milpMM_'+str(sys.argv[1]), thisSeed)
+                               noOfDepots, L, T_max, expt_csv_filename, thisSeed)
                 '''
                 print("-----------------Heuristic Approach------------------------")
                 S = ['D0']
